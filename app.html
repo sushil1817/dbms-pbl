@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Maintenance System - Review 3 | Final Demo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Cinzel:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --bg-deep:#0D0A08;--bg-surface:#17120F;--bg-card:rgba(28,21,18,0.88);
+      --border-warm:rgba(217,140,85,0.20);--border-bright:rgba(217,140,85,0.55);--border-crimson:rgba(225,29,72,0.38);
+      --cognac:#D97736;--cognac-lt:#F4A558;--amber:#F59E0B;--crimson:#E11D48;--crimson-d:#9F1239;
+      --ruby:#FDA4AF;--emerald:#10B981;--sky:#38BDF8;
+      --glow-cognac:rgba(217,119,54,0.35);--glow-crimson:rgba(225,29,72,0.35);--glow-emerald:rgba(16,185,129,0.30);
+      --text-white:#FDFBF7;--text-warm:#EFE8E1;--text-mid:#C7BDB5;--text-muted:#8C7D73;--text-dark:#38271E;
+      --r-xl:24px;--r-lg:16px;--r-md:10px;--r-sm:6px;--sidebar-w:252px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:'Plus Jakarta Sans',sans-serif;-webkit-font-smoothing:antialiased;}
+    body{background:var(--bg-deep);color:var(--text-warm);min-height:100vh;overflow-x:hidden;}
+    .bg-ambient{position:fixed;inset:0;pointer-events:none;z-index:0;
+      background:radial-gradient(ellipse 900px 600px at 10% 20%,rgba(225,29,72,0.07) 0%,transparent 70%),
+      radial-gradient(ellipse 700px 500px at 90% 80%,rgba(217,119,54,0.07) 0%,transparent 70%),
+      radial-gradient(ellipse 500px 400px at 50% 50%,rgba(159,18,57,0.04) 0%,transparent 70%);}
+    .bg-grid{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:0.025;
+      background-image:linear-gradient(rgba(217,140,85,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(217,140,85,0.5) 1px,transparent 1px);
+      background-size:60px 60px;}
+    .shell{display:flex;min-height:100vh;position:relative;z-index:1;}
+    .sidebar{width:var(--sidebar-w);background:linear-gradient(180deg,rgba(20,14,11,0.97) 0%,rgba(13,10,8,0.97) 100%);
+      border-right:1px solid var(--border-warm);display:flex;flex-direction:column;
+      position:fixed;top:0;left:0;height:100vh;overflow-y:auto;z-index:100;backdrop-filter:blur(20px);}
+    .sidebar-header{padding:28px 22px 20px;border-bottom:1px solid var(--border-warm);}
+    .sidebar-logo{display:flex;align-items:center;gap:12px;}
+    .logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--crimson-d) 0%,var(--crimson) 100%);border-radius:10px;
+      display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;box-shadow:0 0 20px var(--glow-crimson);flex-shrink:0;}
+    .logo-text{line-height:1.2;}
+    .logo-title{font-size:13px;font-weight:800;color:var(--text-white);letter-spacing:0.5px;}
+    .logo-sub{font-size:10px;color:var(--cognac);font-weight:500;}
+    .sidebar-badge{margin:12px 22px 0;padding:6px 12px;background:rgba(225,29,72,0.12);border:1px solid var(--border-crimson);
+      border-radius:var(--r-sm);font-size:10px;font-weight:600;color:var(--ruby);letter-spacing:0.5px;text-align:center;}
+    .sidebar-section{padding:18px 12px 8px;}
+    .sidebar-section-label{font-size:9px;font-weight:700;letter-spacing:2px;color:var(--text-muted);padding:0 10px 8px;text-transform:uppercase;}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--r-md);cursor:pointer;
+      transition:all 0.2s ease;margin-bottom:2px;font-size:13px;font-weight:500;color:var(--text-muted);}
+    .nav-item:hover{background:rgba(217,119,54,0.08);color:var(--text-warm);}
+    .nav-item.active{background:linear-gradient(135deg,rgba(225,29,72,0.15) 0%,rgba(217,119,54,0.10) 100%);
+      color:var(--text-white);border:1px solid rgba(225,29,72,0.20);}
+    .nav-item.active .nav-icon{color:var(--crimson);}
+    .nav-icon{font-size:14px;width:18px;text-align:center;transition:color 0.2s;}
+    .nav-badge{margin-left:auto;background:var(--crimson);color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;min-width:20px;text-align:center;}
+    .nav-badge.green{background:var(--emerald);}
+    .nav-badge.amber{background:var(--amber);color:var(--text-dark);}
+    .sidebar-footer{margin-top:auto;padding:16px 22px;border-top:1px solid var(--border-warm);}
+    .db-status{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);}
+    .db-dot{width:7px;height:7px;border-radius:50%;background:var(--emerald);box-shadow:0 0 6px var(--glow-emerald);animation:pulse 2s infinite;}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+    .main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+    .topbar{height:64px;display:flex;align-items:center;padding:0 32px;
+      background:rgba(13,10,8,0.80);border-bottom:1px solid var(--border-warm);
+      backdrop-filter:blur(20px);position:sticky;top:0;z-index:50;gap:16px;}
+    .topbar-title{font-size:16px;font-weight:700;
+      background:linear-gradient(90deg,var(--text-white) 40%,var(--cognac));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px;}
+    .btn-sm{padding:7px 16px;border-radius:var(--r-sm);font-size:12px;font-weight:600;cursor:pointer;border:1px solid;transition:all 0.2s;}
+    .btn-ghost{background:transparent;border-color:var(--border-warm);color:var(--text-mid);}
+    .btn-ghost:hover{border-color:var(--border-bright);color:var(--text-white);}
+    .btn-crimson{background:linear-gradient(135deg,var(--crimson-d),var(--crimson));border-color:transparent;color:#fff;box-shadow:0 0 16px var(--glow-crimson);}
+    .btn-crimson:hover{box-shadow:0 0 24px var(--glow-crimson);transform:translateY(-1px);}
+    .btn-cognac{background:linear-gradient(135deg,#a8541a,var(--cognac));border-color:transparent;color:#fff;box-shadow:0 0 14px var(--glow-cognac);}
+    .btn-cognac:hover{box-shadow:0 0 22px var(--glow-cognac);transform:translateY(-1px);}
+    .btn-emerald{background:linear-gradient(135deg,#065f46,var(--emerald));border-color:transparent;color:#fff;box-shadow:0 0 14px var(--glow-emerald);}
+    .btn-emerald:hover{box-shadow:0 0 22px var(--glow-emerald);transform:translateY(-1px);}
+    .page{padding:32px;display:none;animation:fadeUp 0.35s ease;}
+    .page.active{display:block;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    .card{background:var(--bg-card);border:1px solid var(--border-warm);border-radius:var(--r-lg);padding:24px;
+      backdrop-filter:blur(10px);transition:border-color 0.2s,box-shadow 0.2s;}
+    .card:hover{border-color:var(--border-bright);box-shadow:0 8px 32px rgba(0,0,0,0.4);}
+    .card-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+    .card-icon{width:40px;height:40px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+    .card-icon.red{background:rgba(225,29,72,0.15);color:var(--crimson);}
+    .card-icon.orange{background:rgba(217,119,54,0.15);color:var(--cognac);}
+    .card-icon.green{background:rgba(16,185,129,0.15);color:var(--emerald);}
+    .card-icon.blue{background:rgba(56,189,248,0.15);color:var(--sky);}
+    .card-icon.amber{background:rgba(245,158,11,0.15);color:var(--amber);}
+    .card-title{font-size:15px;font-weight:700;color:var(--text-white);}
+    .card-sub{font-size:12px;color:var(--text-muted);margin-top:2px;}
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+    .stat-card{background:var(--bg-card);border:1px solid var(--border-warm);border-radius:var(--r-lg);padding:22px 24px;position:relative;overflow:hidden;transition:all 0.25s;}
+    .stat-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--card-glow-a,transparent) 0%,transparent 60%);pointer-events:none;}
+    .stat-card:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,0.5);border-color:var(--border-bright);}
+    .stat-card.red{--card-glow-a:rgba(225,29,72,0.06);}
+    .stat-card.orange{--card-glow-a:rgba(217,119,54,0.06);}
+    .stat-card.green{--card-glow-a:rgba(16,185,129,0.06);}
+    .stat-card.amber{--card-glow-a:rgba(245,158,11,0.06);}
+    .stat-label{font-size:11px;font-weight:600;letter-spacing:0.5px;color:var(--text-muted);text-transform:uppercase;}
+    .stat-value{font-size:32px;font-weight:800;margin:8px 0 4px;line-height:1;}
+    .stat-value.red{color:var(--crimson);text-shadow:0 0 20px var(--glow-crimson);}
+    .stat-value.orange{color:var(--cognac);text-shadow:0 0 20px var(--glow-cognac);}
+    .stat-value.green{color:var(--emerald);text-shadow:0 0 20px var(--glow-emerald);}
+    .stat-value.amber{color:var(--amber);}
+    .stat-trend{font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:4px;}
+    .stat-icon{position:absolute;right:18px;top:18px;font-size:28px;opacity:0.08;}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+    .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;}
+    .grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px;}
+    .form-group{margin-bottom:16px;}
+    .form-label{font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px;display:block;}
+    .form-control{width:100%;padding:11px 14px;background:rgba(23,17,14,0.8);border:1px solid var(--border-warm);
+      border-radius:var(--r-md);color:var(--text-white);font-size:13px;font-weight:500;outline:none;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif;}
+    .form-control:focus{border-color:var(--cognac);box-shadow:0 0 0 3px rgba(217,119,54,0.12);}
+    .form-control::placeholder{color:var(--text-muted);}
+    select.form-control option{background:#1c1510;}
+    .form-row{display:grid;gap:12px;}
+    .form-row.col-2{grid-template-columns:1fr 1fr;}
+    .form-row.col-3{grid-template-columns:1fr 1fr 1fr;}
+    .table-wrap{overflow-x:auto;border-radius:var(--r-md);}
+    table{width:100%;border-collapse:collapse;font-size:13px;}
+    thead tr{background:rgba(217,119,54,0.06);}
+    th{padding:12px 16px;text-align:left;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text-muted);text-transform:uppercase;border-bottom:1px solid var(--border-warm);}
+    td{padding:13px 16px;border-bottom:1px solid rgba(217,140,85,0.07);color:var(--text-warm);vertical-align:middle;}
+    tbody tr{transition:background 0.15s;}
+    tbody tr:hover{background:rgba(217,119,54,0.04);}
+    tbody tr:last-child td{border-bottom:none;}
+    .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:0.3px;}
+    .badge-confirmed{background:rgba(16,185,129,0.15);color:var(--emerald);border:1px solid rgba(16,185,129,0.25);}
+    .badge-waitlisted{background:rgba(245,158,11,0.15);color:var(--amber);border:1px solid rgba(245,158,11,0.25);}
+    .badge-cancelled{background:rgba(225,29,72,0.12);color:var(--ruby);border:1px solid rgba(225,29,72,0.22);}
+    .badge-promoted{background:rgba(56,189,248,0.15);color:var(--sky);border:1px solid rgba(56,189,248,0.25);}
+    .badge.dot::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;}
+    .tbl-btn{padding:5px 12px;border-radius:var(--r-sm);font-size:11px;font-weight:600;cursor:pointer;border:1px solid;transition:all 0.15s;margin-right:4px;}
+    .tbl-btn-red{border-color:rgba(225,29,72,0.4);color:var(--ruby);background:rgba(225,29,72,0.08);}
+    .tbl-btn-red:hover{background:rgba(225,29,72,0.18);}
+    .tbl-btn-green{border-color:rgba(16,185,129,0.4);color:var(--emerald);background:rgba(16,185,129,0.08);}
+    .tbl-btn-green:hover{background:rgba(16,185,129,0.18);}
+    .tbl-btn-orange{border-color:rgba(217,119,54,0.4);color:var(--cognac-lt);background:rgba(217,119,54,0.08);}
+    .tbl-btn-orange:hover{background:rgba(217,119,54,0.18);}
+    .search-result{background:var(--bg-card);border:1px solid var(--border-warm);border-radius:var(--r-lg);overflow:hidden;transition:all 0.25s;}
+    .search-result:hover{border-color:var(--cognac);box-shadow:0 8px 30px rgba(0,0,0,0.5);}
+    .sr-header{padding:18px 22px;background:linear-gradient(135deg,rgba(225,29,72,0.08) 0%,rgba(217,119,54,0.05) 100%);border-bottom:1px solid var(--border-warm);display:flex;align-items:center;gap:14px;}
+    .sr-train-no{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--cognac);font-weight:600;background:rgba(217,119,54,0.12);padding:4px 10px;border-radius:var(--r-sm);}
+    .sr-train-name{font-size:15px;font-weight:700;color:var(--text-white);}
+    .sr-type{font-size:11px;color:var(--text-muted);font-style:italic;}
+    .sr-body{padding:18px 22px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
+    .sr-station{text-align:center;}
+    .sr-station-code{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--text-white);}
+    .sr-station-name{font-size:10px;color:var(--text-muted);margin-top:2px;}
+    .sr-journey{flex:1;display:flex;align-items:center;gap:8px;}
+    .sr-line{flex:1;height:1px;background:linear-gradient(90deg,var(--crimson),var(--cognac));position:relative;}
+    .sr-line::after{content:'\25BA';position:absolute;right:-6px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--cognac);}
+    .sr-duration{font-size:11px;color:var(--cognac);font-weight:600;text-align:center;}
+    .sr-footer{padding:14px 22px;border-top:1px solid var(--border-warm);display:flex;gap:12px;flex-wrap:wrap;}
+    .sr-seat-pill{display:flex;align-items:center;gap:8px;background:rgba(23,17,14,0.8);border:1px solid var(--border-warm);border-radius:var(--r-sm);padding:8px 14px;cursor:pointer;transition:all 0.2s;}
+    .sr-seat-pill:hover{border-color:var(--cognac);background:rgba(217,119,54,0.08);}
+    .sr-class{font-size:11px;font-weight:700;color:var(--text-warm);}
+    .sr-avail{font-size:11px;font-weight:600;}
+    .avail-ok{color:var(--emerald);}
+    .avail-wl{color:var(--amber);}
+    .sr-fare{font-size:11px;color:var(--text-muted);}
+    .terminal{background:#060402;border:1px solid rgba(217,140,85,0.15);border-radius:var(--r-md);padding:16px;font-family:'JetBrains Mono',monospace;font-size:11px;height:200px;overflow-y:auto;scroll-behavior:smooth;}
+    .terminal::-webkit-scrollbar{width:4px;}
+    .terminal::-webkit-scrollbar-track{background:transparent;}
+    .terminal::-webkit-scrollbar-thumb{background:rgba(217,140,85,0.3);border-radius:2px;}
+    .log-line{margin-bottom:6px;line-height:1.6;}
+    .log-time{color:var(--text-muted);}
+    .log-ok{color:var(--emerald);}
+    .log-warn{color:var(--amber);}
+    .log-err{color:var(--crimson);}
+    .log-info{color:var(--sky);}
+    .log-sql{color:var(--cognac-lt);}
+    .wl-item{display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:var(--r-md);background:rgba(23,17,14,0.7);border:1px solid var(--border-warm);margin-bottom:8px;transition:all 0.2s;}
+    .wl-item:hover{border-color:var(--border-bright);}
+    .wl-pos{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--crimson-d),var(--crimson));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0;}
+    .wl-pos.top{background:linear-gradient(135deg,#a8541a,var(--cognac));}
+    .wl-info{flex:1;}
+    .wl-name{font-size:13px;font-weight:600;color:var(--text-white);}
+    .wl-detail{font-size:11px;color:var(--text-muted);margin-top:2px;}
+    .wl-actions{display:flex;gap:8px;}
+    .fare-breakdown{background:rgba(23,17,14,0.8);border:1px solid var(--border-warm);border-radius:var(--r-md);padding:20px;}
+    .fare-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(217,140,85,0.07);}
+    .fare-row:last-child{border-bottom:none;}
+    .fare-row.total{padding-top:14px;border-top:1px solid var(--border-bright);margin-top:4px;}
+    .fare-label{font-size:12px;color:var(--text-mid);}
+    .fare-val{font-size:13px;font-weight:700;color:var(--text-white);font-family:'JetBrains Mono',monospace;}
+    .fare-val.total{color:var(--cognac);font-size:18px;text-shadow:0 0 16px var(--glow-cognac);}
+    .progress-bar{height:6px;background:rgba(217,140,85,0.10);border-radius:3px;overflow:hidden;margin-top:8px;}
+    .progress-fill{height:100%;border-radius:3px;transition:width 0.6s ease;}
+    .fill-green{background:linear-gradient(90deg,#065f46,var(--emerald));}
+    .fill-amber{background:linear-gradient(90deg,#92400e,var(--amber));}
+    .fill-red{background:linear-gradient(90deg,var(--crimson-d),var(--crimson));}
+    .bar-chart{display:flex;align-items:flex-end;gap:10px;height:120px;margin-top:12px;}
+    .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;}
+    .bar{width:100%;border-radius:4px 4px 0 0;min-height:4px;}
+    .bar-label{font-size:9px;color:var(--text-muted);text-align:center;white-space:nowrap;}
+    .bar-val{font-size:10px;color:var(--text-mid);font-weight:600;}
+    .section-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+    .section-title{font-size:20px;font-weight:800;color:var(--text-white);}
+    .section-sub{font-size:12px;color:var(--text-muted);margin-top:3px;}
+    .divider{height:1px;background:var(--border-warm);margin:24px 0;}
+    #toast-container{position:fixed;bottom:28px;right:28px;z-index:9999;display:flex;flex-direction:column;gap:10px;}
+    .toast{padding:14px 20px;border-radius:var(--r-md);background:rgba(28,21,18,0.97);border-left:3px solid;backdrop-filter:blur(16px);box-shadow:0 8px 32px rgba(0,0,0,0.6);font-size:13px;font-weight:500;max-width:340px;animation:slideIn 0.3s ease;display:flex;align-items:flex-start;gap:10px;}
+    .toast-title{font-weight:700;margin-bottom:2px;}
+    .toast-msg{font-size:12px;color:var(--text-muted);}
+    @keyframes slideIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+    .toast.success{border-color:var(--emerald);}.toast.success .ti{color:var(--emerald);}
+    .toast.error{border-color:var(--crimson);}.toast.error .ti{color:var(--crimson);}
+    .toast.warn{border-color:var(--amber);}.toast.warn .ti{color:var(--amber);}
+    .toast.info{border-color:var(--sky);}.toast.info .ti{color:var(--sky);}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(5,3,2,0.85);backdrop-filter:blur(8px);z-index:500;display:none;align-items:center;justify-content:center;}
+    .modal-backdrop.open{display:flex;animation:fadeIn 0.2s ease;}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    .modal{background:linear-gradient(145deg,rgba(28,21,18,0.99) 0%,rgba(20,14,11,0.99) 100%);border:1px solid var(--border-warm);border-radius:var(--r-xl);padding:32px;min-width:440px;max-width:580px;width:90%;box-shadow:0 24px 80px rgba(0,0,0,0.8);animation:modalIn 0.25s ease;max-height:90vh;overflow-y:auto;}
+    @keyframes modalIn{from{opacity:0;transform:scale(0.94) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+    .modal-title{font-size:18px;font-weight:800;color:var(--text-white);}
+    .modal-close{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:20px;padding:4px;transition:color 0.2s;}
+    .modal-close:hover{color:var(--text-white);}
+    .ticket{background:linear-gradient(135deg,rgba(35,24,18,0.95) 0%,rgba(20,14,11,0.95) 100%);border:1px solid var(--border-bright);border-radius:var(--r-lg);overflow:hidden;}
+    .ticket-stripe{height:4px;background:linear-gradient(90deg,var(--crimson-d),var(--crimson),var(--cognac),var(--amber));}
+    .ticket-header{padding:20px 24px;background:linear-gradient(135deg,rgba(225,29,72,0.08),rgba(217,119,54,0.05));border-bottom:1px dashed rgba(217,140,85,0.2);display:flex;align-items:center;justify-content:space-between;}
+    .ticket-body{padding:20px 24px;}
+    .ticket-row{display:flex;justify-content:space-between;gap:16px;margin-bottom:14px;}
+    .ticket-field{flex:1;}
+    .ticket-field-label{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;}
+    .ticket-field-val{font-size:13px;font-weight:700;color:var(--text-white);}
+    .pnr-code{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:800;color:var(--cognac);letter-spacing:2px;text-shadow:0 0 20px var(--glow-cognac);}
+    ::-webkit-scrollbar{width:5px;height:5px;}
+    ::-webkit-scrollbar-track{background:transparent;}
+    ::-webkit-scrollbar-thumb{background:rgba(217,140,85,0.25);border-radius:3px;}
+    ::-webkit-scrollbar-thumb:hover{background:rgba(217,140,85,0.45);}
+    .empty-state{text-align:center;padding:48px 24px;}
+    .empty-icon{font-size:48px;margin-bottom:12px;opacity:0.3;}
+    .empty-title{font-size:15px;font-weight:600;color:var(--text-mid);}
+    .empty-sub{font-size:12px;color:var(--text-muted);margin-top:4px;}
+    .report-metric{text-align:center;padding:20px;border:1px solid var(--border-warm);border-radius:var(--r-lg);background:var(--bg-card);}
+    .report-num{font-size:28px;font-weight:800;}
+    .report-label{font-size:11px;color:var(--text-muted);margin-top:4px;}
+    .entity-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+    .entity-tabs{display:flex;gap:4px;}
+    .etab{padding:6px 14px;border-radius:var(--r-sm);font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border-warm);color:var(--text-muted);transition:all 0.15s;}
+    .etab.active{background:rgba(217,119,54,0.12);border-color:var(--cognac);color:var(--cognac);}
+    .text-cognac{color:var(--cognac);}.text-crimson{color:var(--crimson);}.text-emerald{color:var(--emerald);}.text-amber{color:var(--amber);}
+    .mono{font-family:'JetBrains Mono',monospace;}
+    .mb-4{margin-bottom:16px;}.mb-6{margin-bottom:24px;}.mt-4{margin-top:16px;}.mt-6{margin-top:24px;}
+    .fw-700{font-weight:700;}.fw-600{font-weight:600;}
+    .text-muted{color:var(--text-muted);}.text-white{color:var(--text-white);}
+    .page-banner{border-radius:var(--r-lg);padding:28px 32px;margin-bottom:28px;background:linear-gradient(135deg,rgba(159,18,57,0.12) 0%,rgba(217,119,54,0.06) 100%);border:1px solid var(--border-crimson);display:flex;align-items:center;gap:20px;position:relative;overflow:hidden;}
+    .page-banner::after{content:'';position:absolute;right:-40px;top:-40px;width:180px;height:180px;background:radial-gradient(circle,rgba(225,29,72,0.07) 0%,transparent 70%);pointer-events:none;}
+    .banner-icon{font-size:36px;flex-shrink:0;}
+    .banner-title{font-size:22px;font-weight:800;color:var(--text-white);font-family:'Cinzel',serif;}
+    .banner-sub{font-size:13px;color:var(--text-muted);margin-top:4px;}
+    #searchResultsArea{display:flex;flex-direction:column;gap:14px;margin-top:20px;}
+  
+    textarea.form-control{resize:vertical;font-family:'Plus Jakarta Sans',sans-serif;}
+    .modal{max-height:90vh;overflow-y:auto;}
+    .tbl-btn,.btn-sm{font-family:inherit;}
+    .btn-sm{margin-right:6px;}
+</style>
+</head>
+<body>
+<div class="bg-ambient"></div>
+<div class="bg-grid"></div>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="logo-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+        <div class="logo-text"><div class="logo-title">FIXTRACK v3.0</div><div class="logo-sub">Campus Maintenance</div></div>
+      </div>
+      <div class="sidebar-badge">REVIEW 3 &bull; FINAL DEMO</div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Overview</div>
+      <div class="nav-item active" onclick="navigate('dashboard')"><i class="fa-solid fa-gauge-high nav-icon"></i> Dashboard</div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Operations</div>
+      <div class="nav-item" onclick="navigate('newreq')"><i class="fa-solid fa-circle-plus nav-icon"></i> Log Request</div>
+      <div class="nav-item" onclick="navigate('requests')"><i class="fa-solid fa-list-check nav-icon"></i> All Requests <span class="nav-badge" id="nb-pending">0</span></div>
+      <div class="nav-item" onclick="navigate('assign')"><i class="fa-solid fa-user-gear nav-icon"></i> Assignment Desk <span class="nav-badge amber" id="nb-open">0</span></div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Data &amp; Reports</div>
+      <div class="nav-item" onclick="navigate('crud')"><i class="fa-solid fa-database nav-icon"></i> CRUD Manager</div>
+      <div class="nav-item" onclick="navigate('reports')"><i class="fa-solid fa-chart-pie nav-icon"></i> Reports</div>
+    </div>
+    <div class="sidebar-footer"><div class="db-status"><div class="db-dot"></div><span>CampusMaintenanceDB &bull; MySQL 8.0</span></div></div>
+  </aside>
+  <main class="main">
+    <div class="topbar">
+      <span class="topbar-title" id="topbar-title">Dashboard Overview</span>
+      <div class="topbar-right">
+        <span style="font-size:11px;color:var(--text-muted);">DBMS Project 41 &mdash; Campus Facility Maintenance</span>
+        <button class="btn-sm btn-crimson" onclick="navigate('newreq')"><i class="fa-solid fa-plus"></i> New Request</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-banner">
+        <div class="banner-icon">&#x1F6E0;&#xFE0F;</div>
+        <div><div class="banner-title">Campus Facility Maintenance Management</div>
+        <div class="banner-sub">Request Logging &bull; Priority &amp; SLA &bull; Technician Assignment &bull; Work &amp; Material Costing &bull; Status Control &bull; Feedback &bull; Reports</div></div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card red"><div class="stat-icon"><i class="fa-solid fa-clipboard-list"></i></div><div class="stat-label">Total Requests</div><div class="stat-value red" id="kpi-total">0</div><div class="stat-trend">Live count</div></div>
+        <div class="stat-card amber"><div class="stat-icon"><i class="fa-solid fa-hourglass-half"></i></div><div class="stat-label">Pending</div><div class="stat-value amber" id="kpi-pending">0</div><div class="stat-trend" id="kpi-overdue">0 past SLA</div></div>
+        <div class="stat-card green"><div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div><div class="stat-label">Closed</div><div class="stat-value green" id="kpi-closed">0</div><div class="stat-trend" id="kpi-rating">Avg rating -</div></div>
+        <div class="stat-card orange"><div class="stat-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div><div class="stat-label">Maintenance Cost</div><div class="stat-value orange" id="kpi-cost">0</div><div class="stat-trend">Labour + materials</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card"><div class="card-header"><div class="card-icon red"><i class="fa-solid fa-clock-rotate-left"></i></div><div><div class="card-title">Recent Requests</div><div class="card-sub">Latest complaints logged</div></div></div>
+          <div class="table-wrap"><table><thead><tr><th>Request No</th><th>Title</th><th>Priority</th><th>Status</th></tr></thead><tbody id="dash-recent"></tbody></table></div></div>
+        <div class="card"><div class="card-header"><div class="card-icon orange"><i class="fa-solid fa-chart-bar"></i></div><div><div class="card-title">Requests by Category</div><div class="card-sub">Where the complaints come from</div></div></div><div id="dash-cats"></div>
+          <div class="divider"></div><div class="card-title" style="margin-bottom:10px;font-size:13px;">By Status</div><div id="dash-status" style="display:flex;gap:8px;flex-wrap:wrap;"></div></div>
+      </div>
+      <div class="card mt-6"><div class="card-header"><div class="card-icon blue"><i class="fa-solid fa-terminal"></i></div><div><div class="card-title">System Transaction Log</div><div class="card-sub">Live actions &amp; database rule checks</div></div></div><div class="terminal" id="dash-terminal"></div></div>
+    </div>
+
+    <!-- LOG REQUEST -->
+    <div class="page" id="page-newreq">
+      <div class="section-heading"><div><div class="section-title">Log Maintenance Request</div><div class="section-sub">A unique request number is generated by the system</div></div></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="form-group"><label class="form-label">Requested By</label><select class="form-control" id="n-user"></select></div>
+          <div class="form-row col-2"><div class="form-group"><label class="form-label">Building</label><select class="form-control" id="n-building" onchange="fillRooms()"></select></div>
+            <div class="form-group"><label class="form-label">Room</label><select class="form-control" id="n-room" onchange="fillAssets()"></select></div></div>
+          <div class="form-row col-2"><div class="form-group"><label class="form-label">Category</label><select class="form-control" id="n-cat" onchange="fillAssets()"></select></div>
+            <div class="form-group"><label class="form-label">Asset (optional)</label><select class="form-control" id="n-asset"></select></div></div>
+          <div class="form-group"><label class="form-label">Priority</label><select class="form-control" id="n-prio" onchange="showSla()"></select><div class="text-muted" id="n-sla" style="font-size:11px;margin-top:6px;"></div></div>
+          <div class="form-group"><label class="form-label">Title</label><input class="form-control" id="n-title" maxlength="150" placeholder="e.g. Ceiling fan not working"></div>
+          <div class="form-group"><label class="form-label">Description</label><textarea class="form-control" id="n-desc" rows="3" maxlength="2000" placeholder="Describe the problem"></textarea></div>
+          <button class="btn-sm btn-crimson" style="width:100%;padding:14px;font-size:14px;" onclick="submitRequest()"><i class="fa-solid fa-paper-plane"></i> Submit Request</button>
+        </div>
+        <div class="card"><div class="card-header"><div class="card-icon amber"><i class="fa-solid fa-shield-halved"></i></div><div><div class="card-title">Rules enforced by the database</div></div></div>
+          <div class="text-muted" style="font-size:12px;line-height:2;">
+            &bull; Request numbers are unique (REQ-YYYY-NNNN)<br>&bull; An asset must belong to the selected room<br>&bull; Only OPEN requests can be assigned<br>
+            &bull; Technician must be active and under their open-job limit<br>&bull; Status can only follow valid transitions<br>&bull; Closing needs remarks; costs &amp; stock never negative<br>&bull; Feedback only after a request is CLOSED</div></div>
+      </div>
+    </div>
+
+    <!-- ALL REQUESTS -->
+    <div class="page" id="page-requests">
+      <div class="section-heading"><div><div class="section-title">All Requests</div><div class="section-sub">Search, filter and manage the full register</div></div></div>
+      <div class="card mb-6"><div class="form-row col-4" style="grid-template-columns:2fr 1fr 1fr 1fr auto;align-items:end;">
+        <div class="form-group" style="margin:0"><label class="form-label">Search</label><input class="form-control" id="f-q" placeholder="Request no, title or requester" onkeydown="if(event.key==='Enter')renderRequests()"></div>
+        <div class="form-group" style="margin:0"><label class="form-label">Status</label><select class="form-control" id="f-status"></select></div>
+        <div class="form-group" style="margin:0"><label class="form-label">Category</label><select class="form-control" id="f-cat"></select></div>
+        <div class="form-group" style="margin:0"><label class="form-label">Priority</label><select class="form-control" id="f-prio"></select></div>
+        <button class="btn-sm btn-crimson" style="padding:12px 18px" onclick="renderRequests()"><i class="fa-solid fa-magnifying-glass"></i> Search</button></div></div>
+      <div class="card"><div class="table-wrap"><table><thead><tr><th>Request No</th><th>Title</th><th>Location</th><th>Category</th><th>Priority</th><th>Technician</th><th>Age</th><th>Status</th><th></th></tr></thead><tbody id="req-tbody"></tbody></table></div></div>
+    </div>
+
+    <!-- ASSIGNMENT DESK -->
+    <div class="page" id="page-assign">
+      <div class="section-heading"><div><div class="section-title">Assignment Desk</div><div class="section-sub">Open requests, highest priority first. Technicians are listed with current load.</div></div></div>
+      <div class="card"><div id="assign-list"></div></div>
+    </div>
+
+    <!-- CRUD -->
+    <div class="page" id="page-crud">
+      <div class="section-heading"><div><div class="section-title">CRUD Manager</div><div class="section-sub">Create, read, update and delete master data (deletes are blocked when records depend on them)</div></div>
+        <button class="btn-sm btn-cognac" onclick="openAdd()"><i class="fa-solid fa-plus"></i> Add Record</button></div>
+      <div class="entity-tabs mb-4" id="crud-tabs"></div>
+      <div class="card"><div class="table-wrap"><table><thead id="crud-thead"></thead><tbody id="crud-tbody"></tbody></table></div></div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="page" id="page-reports">
+      <div class="section-heading"><div><div class="section-title">Reports &amp; Analytics</div><div class="section-sub">Joins, aggregates, nested queries and views</div></div></div>
+      <div class="grid-4 mb-6" id="rep-kpis"></div>
+      <div class="entity-tabs mb-4" id="rep-tabs"></div>
+      <div class="card" id="rep-body"></div>
+    </div>
+  </main>
+</div>
+<div id="toast-container"></div>
+<div class="modal-backdrop" id="modal-backdrop" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal-box"><div class="modal-header"><div class="modal-title" id="modal-title"></div><button class="modal-close" onclick="closeModal()">&#x2715;</button></div><div id="modal-body"></div></div>
+</div>
+<script>
+let DB = {buildings:[],rooms:[],categories:[],priorities:[],users:[],technicians:[],materials:[],assets:[],statuses:[],transitions:[]};
+
+async function api(path, opts) {
+  const o = Object.assign({}, opts || {});
+  if (o.body && typeof o.body !== 'string') { o.body = JSON.stringify(o.body); o.headers = {'Content-Type':'application/json'}; }
+  const res = await fetch(path, o);
+  let data = null;
+  try { data = await res.json(); } catch (e) {}
+  if (!res.ok) { const err = new Error((data && data.error) || ('Request failed (' + res.status + ')')); err.status = res.status; throw err; }
+  return data;
+}
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = n => '\u20B9' + Number(n || 0).toLocaleString('en-IN', {maximumFractionDigits: 2});
+const opt = (v, t, sel) => '<option value="' + esc(v) + '"' + (sel ? ' selected' : '') + '>' + esc(t) + '</option>';
+const $ = id => document.getElementById(id);
+const val = id => $(id).value;
+async function loadBootstrap() { DB = await api('/api/bootstrap'); }
+
+function toast(title, msg, type) {
+  const c = $('toast-container'), d = document.createElement('div');
+  const icon = {success:'fa-circle-check', error:'fa-circle-xmark', warn:'fa-triangle-exclamation', info:'fa-circle-info'}[type || 'info'];
+  d.className = 'toast ' + (type || 'info');
+  d.innerHTML = '<div class="toast-title"><i class="fa-solid ' + icon + ' ti"></i> ' + esc(title) + '</div><div class="toast-msg">' + esc(msg) + '</div>';
+  c.appendChild(d); setTimeout(() => d.remove(), 4500);
+}
+function logLine(msg, type) {
+  const t = $('dash-terminal'); if (!t) return;
+  const cls = {ok:'log-ok', warn:'log-warn', err:'log-err', info:'log-info', sql:'log-sql'};
+  const d = new Date(), ts = [d.getHours(), d.getMinutes(), d.getSeconds()].map(x => String(x).padStart(2, '0')).join(':');
+  t.innerHTML += '<div class="log-line"><span class="log-time">[' + ts + ']</span> <span class="' + (cls[type] || 'log-info') + '">' + esc(msg) + '</span></div>';
+  t.scrollTop = t.scrollHeight;
+}
+async function guard(fn, okTitle, okMsg) {      // runs an action, shows success/error toast
+  try { const r = await fn(); if (okTitle) { toast(okTitle, okMsg || '', 'success'); logLine(okTitle + (okMsg ? ' - ' + okMsg : ''), 'ok'); } return r; }
+  catch (e) { toast('Action blocked', e.message, 'error'); logLine('REJECTED: ' + e.message, 'err'); return null; }
+}
+
+const STATUS_CLS = {OPEN:'badge-waitlisted', ASSIGNED:'badge-promoted', IN_PROGRESS:'badge-promoted', ON_HOLD:'badge-waitlisted', RESOLVED:'badge-confirmed', CLOSED:'badge-confirmed', CANCELLED:'badge-cancelled'};
+const statusBadge = s => '<span class="badge dot ' + (STATUS_CLS[s] || '') + '">' + esc(s) + '</span>';
+const PRIO_COL = {Critical:'var(--crimson)', High:'var(--amber)', Medium:'var(--sky)', Low:'var(--emerald)'};
+const prioTag = p => '<span class="fw-700" style="color:' + (PRIO_COL[p] || 'inherit') + '">' + esc(p) + '</span>';
+const ageTxt = h => h < 24 ? h + ' h' : Math.floor(h / 24) + ' d ' + (h % 24) + ' h';
+
+const TITLES = {dashboard:'Dashboard Overview', newreq:'Log Request', requests:'All Requests', assign:'Assignment Desk', crud:'CRUD Manager', reports:'Reports & Analytics'};
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  $('page-' + page).classList.add('active');
+  const ni = document.querySelector(".nav-item[onclick=\"navigate('" + page + "')\"]"); if (ni) ni.classList.add('active');
+  $('topbar-title').textContent = TITLES[page] || page;
+  if (page === 'dashboard') renderDashboard();
+  if (page === 'newreq') initNewForm();
+  if (page === 'requests') initFilters(), renderRequests();
+  if (page === 'assign') renderAssignDesk();
+  if (page === 'crud') renderCRUD();
+  if (page === 'reports') renderReports();
+}
+
+/* ---------------- dashboard ---------------- */
+async function renderDashboard() {
+  let d; try { d = await api('/api/dashboard'); } catch (e) { toast('Load failed', e.message, 'error'); return; }
+  $('kpi-total').textContent = d.kpis.total; $('kpi-pending').textContent = d.kpis.pending; $('kpi-closed').textContent = d.kpis.closed;
+  $('kpi-overdue').textContent = d.kpis.overdue + ' past SLA'; $('kpi-cost').textContent = fmt(d.kpis.cost);
+  $('kpi-rating').textContent = 'Avg rating ' + (d.kpis.avgRating ? d.kpis.avgRating.toFixed(2) + ' / 5' : '-');
+  $('dash-recent').innerHTML = d.recent.map(r => '<tr style="cursor:pointer" onclick="openRequest(' + r.id + ')"><td class="mono text-cognac fw-700">' + esc(r.no) + '</td><td>' + esc(r.title) + '</td><td>' + prioTag(r.priority) + '</td><td>' + statusBadge(r.status) + '</td></tr>').join('');
+  const max = Math.max(1, ...d.byCategory.map(c => c.n));
+  $('dash-cats').innerHTML = d.byCategory.map(c => '<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:12px"><span>' + esc(c.category) + '</span><span class="mono">' + c.n + '</span></div><div class="progress-bar"><div class="progress-fill fill-amber" style="width:' + (c.n / max * 100) + '%"></div></div></div>').join('');
+  $('dash-status').innerHTML = Object.entries(d.byStatus).map(([s, n]) => statusBadge(s).replace('</span>', ' &middot; ' + n + '</span>')).join('');
+  badges();
+}
+async function badges() { try { const c = await api('/api/counts'); $('nb-pending').textContent = c.pending; $('nb-open').textContent = c.unassigned; } catch (e) {} }
+
+/* ---------------- log request ---------------- */
+function initNewForm() {
+  $('n-user').innerHTML = DB.users.map(u => opt(u.id, u.name + ' (' + u.role + ')')).join('');
+  $('n-building').innerHTML = DB.buildings.map(b => opt(b.id, b.code + ' - ' + b.name)).join('');
+  $('n-cat').innerHTML = DB.categories.map(c => opt(c.id, c.name)).join('');
+  $('n-prio').innerHTML = DB.priorities.map(p => opt(p.id, p.name, p.name === 'Medium')).join('');
+  fillRooms(); showSla();
+}
+function fillRooms() {
+  const b = +val('n-building');
+  $('n-room').innerHTML = DB.rooms.filter(r => r.buildingId === b).map(r => opt(r.id, r.roomNo + ' (' + r.type + ', floor ' + r.floor + ')')).join('');
+  fillAssets();
+}
+function fillAssets() {
+  const room = +val('n-room'), cat = +val('n-cat');
+  const list = DB.assets.filter(a => a.roomId === room && a.categoryId === cat);
+  $('n-asset').innerHTML = opt('', '-- not specific / none --') + list.map(a => opt(a.id, a.tag + ' - ' + a.name)).join('');
+}
+function showSla() { const p = DB.priorities.find(x => x.id === +val('n-prio')); $('n-sla').textContent = p ? 'Target response: within ' + p.sla + ' hours' : ''; }
+async function submitRequest() {
+  const title = val('n-title').trim();
+  if (!title) { toast('Missing title', 'Enter a short title for the problem', 'warn'); return; }
+  if (!val('n-room')) { toast('Missing room', 'Select a room', 'warn'); return; }
+  const r = await guard(() => api('/api/requests', {method:'POST', body:{title, description:val('n-desc'), userId:+val('n-user'), roomId:+val('n-room'), categoryId:+val('n-cat'), priorityId:+val('n-prio'), assetId:val('n-asset') ? +val('n-asset') : null}}));
+  if (r) { toast('Request logged', r.no + ' created', 'success'); logLine('INSERT Request ' + r.no, 'sql'); $('n-title').value = ''; $('n-desc').value = ''; badges(); openRequest(r.id); }
+}
+
+/* ---------------- request list ---------------- */
+function initFilters() {
+  if ($('f-status').options.length) return;
+  $('f-status').innerHTML = opt('', 'All statuses') + opt('PENDING', 'Pending (not closed)') + DB.statuses.map(s => opt(s, s)).join('');
+  $('f-cat').innerHTML = opt('', 'All categories') + DB.categories.map(c => opt(c.id, c.name)).join('');
+  $('f-prio').innerHTML = opt('', 'All priorities') + DB.priorities.map(p => opt(p.id, p.name)).join('');
+}
+async function renderRequests() {
+  const qs = new URLSearchParams({q:val('f-q'), status:val('f-status'), category:val('f-cat'), priority:val('f-prio')});
+  let d; try { d = await api('/api/requests?' + qs); } catch (e) { toast('Load failed', e.message, 'error'); return; }
+  $('req-tbody').innerHTML = d.requests.length ? d.requests.map(r =>
+    '<tr><td class="mono text-cognac fw-700">' + esc(r.no) + '</td><td>' + esc(r.title) + '<div class="text-muted" style="font-size:11px">' + esc(r.requester) + '</div></td><td>' + esc(r.buildingCode) + ' / ' + esc(r.roomNo) + '</td><td>' + esc(r.category) + '</td><td>' + prioTag(r.priority) + '</td><td>' + esc(r.technician || '-') + '</td><td class="mono">' + ageTxt(r.ageHours) + '</td><td>' + statusBadge(r.status) + '</td><td><button class="tbl-btn tbl-btn-orange" onclick="openRequest(' + r.id + ')">Open</button></td></tr>').join('')
+    : '<tr><td colspan="9"><div class="empty-state"><div class="empty-title">No requests match</div></div></td></tr>';
+  badges();
+}
+
+/* ---------------- request detail + actions ---------------- */
+function openModal(title, html) { $('modal-title').textContent = title; $('modal-body').innerHTML = html; $('modal-box').style.maxWidth = '860px'; $('modal-backdrop').classList.add('open'); }
+function closeModal() { $('modal-backdrop').classList.remove('open'); }
+let CUR = null;
+async function openRequest(id) {
+  let r; try { r = await api('/api/requests/' + id); } catch (e) { toast('Load failed', e.message, 'error'); return; }
+  CUR = r;
+  let techs = [];
+  if (r.status === 'OPEN') techs = (await api('/api/requests/' + id + '/technicians')).technicians;
+  const act = [];
+  const live = !['CLOSED', 'CANCELLED'].includes(r.status);
+  if (live) act.push('<div class="form-row col-2" style="grid-template-columns:1fr auto;align-items:end;margin-bottom:12px"><div><label class="form-label">Set priority</label><select class="form-control" id="d-prio">' + DB.priorities.map(p => opt(p.id, p.name + ' (' + p.sla + 'h)', p.id === r.priorityId)).join('') + '</select></div><button class="btn-sm btn-ghost" style="padding:11px 16px" onclick="doPriority()">Update</button></div>');
+  if (r.status === 'OPEN') act.push('<div class="form-row" style="grid-template-columns:1fr auto;align-items:end;margin-bottom:12px"><div><label class="form-label">Assign technician</label><select class="form-control" id="d-tech">' + techs.map(t => opt(t.id, t.name + ' - ' + t.category + ' (' + t.openJobs + '/' + t.maxJobs + ' jobs)' + (t.matches ? '' : ' [other trade]'))).join('') + '</select></div><button class="btn-sm btn-emerald" style="padding:11px 16px" onclick="doAssign()">Assign</button></div>');
+  if (r.status === 'ASSIGNED') act.push('<button class="btn-sm btn-emerald" onclick="doStatus(\'IN_PROGRESS\')">Start work</button> <button class="btn-sm btn-ghost" onclick="doUnassign()">Unassign</button>');
+  if (r.status === 'IN_PROGRESS') act.push(
+    '<div class="form-row col-3" style="grid-template-columns:1fr 2fr auto;align-items:end;margin-bottom:12px"><div><label class="form-label">Hours</label><input type="number" step="0.25" min="0.25" max="24" class="form-control" id="d-hrs" value="1"></div><div><label class="form-label">Work notes</label><input class="form-control" id="d-notes" maxlength="300"></div><button class="btn-sm btn-cognac" style="padding:11px 16px" onclick="doWork()">Log work</button></div>' +
+    '<div class="form-row" style="grid-template-columns:2fr 1fr auto;align-items:end;margin-bottom:12px"><div><label class="form-label">Material used</label><select class="form-control" id="d-mat">' + DB.materials.map(m => opt(m.id, m.name + ' - ' + fmt(m.cost) + '/' + m.unit + ' (stock ' + m.stock + ')')).join('') + '</select></div><div><label class="form-label">Qty</label><input type="number" min="1" step="1" class="form-control" id="d-qty" value="1"></div><button class="btn-sm btn-cognac" style="padding:11px 16px" onclick="doMaterial()">Add</button></div>' +
+    '<button class="btn-sm btn-emerald" onclick="doStatus(\'RESOLVED\')">Mark resolved</button> <button class="btn-sm btn-ghost" onclick="doStatus(\'ON_HOLD\')">Put on hold</button>');
+  if (r.status === 'ON_HOLD') act.push('<button class="btn-sm btn-emerald" onclick="doStatus(\'IN_PROGRESS\')">Resume work</button> <button class="btn-sm btn-crimson" onclick="doStatus(\'CANCELLED\')">Cancel request</button>');
+  if (r.status === 'RESOLVED') act.push('<div class="form-group"><label class="form-label">Closure remarks (required)</label><input class="form-control" id="d-close" maxlength="500" placeholder="e.g. Fan repaired and verified by requester"></div><button class="btn-sm btn-emerald" onclick="doClose()">Close request</button> <button class="btn-sm btn-ghost" onclick="doStatus(\'IN_PROGRESS\')">Reopen work</button>');
+  if (['OPEN', 'ASSIGNED'].includes(r.status)) act.push(' <button class="btn-sm btn-crimson" onclick="doStatus(\'CANCELLED\')">Cancel request</button>');
+  if (r.status === 'CLOSED' && !r.feedback) act.push('<div class="card-title" style="margin-bottom:8px">Give feedback</div><div class="form-row" style="grid-template-columns:1fr 3fr auto;align-items:end"><div><label class="form-label">Rating</label><select class="form-control" id="d-rate">' + [5,4,3,2,1].map(n => opt(n, n + ' / 5')).join('') + '</select></div><div><label class="form-label">Comments</label><input class="form-control" id="d-fb" maxlength="500"></div><button class="btn-sm btn-cognac" style="padding:11px 16px" onclick="doFeedback()">Submit</button></div>');
+  const tbl = (h, rows) => '<div class="table-wrap" style="margin-bottom:14px"><table><thead><tr>' + h.map(x => '<th>' + x + '</th>').join('') + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+  const html =
+    '<div style="display:flex;gap:10px;align-items:center;margin-bottom:12px">' + statusBadge(r.status) + prioTag(r.priority) + '<span class="text-muted" style="font-size:12px">SLA ' + r.sla + 'h &bull; age ' + ageTxt(r.ageHours) + '</span></div>' +
+    '<div class="text-white fw-700" style="font-size:15px">' + esc(r.title) + '</div><div class="text-muted" style="font-size:12px;margin:4px 0 12px">' + esc(r.description || 'No description') + '</div>' +
+    '<div class="grid-3" style="font-size:12px;margin-bottom:14px"><div><span class="text-muted">Requester</span><br>' + esc(r.requester) + '</div><div><span class="text-muted">Location</span><br>' + esc(r.building) + ' / ' + esc(r.roomNo) + '</div><div><span class="text-muted">Category / Asset</span><br>' + esc(r.category) + (r.assetTag ? ' / ' + esc(r.assetTag) : '') + '</div><div><span class="text-muted">Technician</span><br>' + esc(r.technician || '-') + '</div><div><span class="text-muted">Created</span><br>' + esc(r.createdAt) + '</div><div><span class="text-muted">Cost</span><br><b class="text-cognac">' + fmt(r.cost.total) + '</b> (labour ' + fmt(r.cost.labour) + ' + materials ' + fmt(r.cost.material) + ')</div></div>' +
+    (r.status === 'CLOSED' ? '<div class="fare-breakdown" style="margin-bottom:14px"><b>Closed ' + esc(r.closedAt) + '</b><br><span class="text-muted">' + esc(r.closureRemarks) + '</span>' + (r.feedback ? '<br>Feedback: <b class="text-amber">' + r.feedback.rating + '/5</b> ' + esc(r.feedback.comments || '') : '') + '</div>' : '') +
+    (act.length ? '<div class="divider"></div>' + act.join('') : '') +
+    '<div class="divider"></div>' +
+    (r.workLogs.length ? '<div class="card-title" style="font-size:13px;margin-bottom:6px">Work log</div>' + tbl(['Date','Hours','Labour','Notes'], r.workLogs.map(w => '<tr><td>' + esc(w.logDate) + '</td><td>' + w.hours + '</td><td>' + fmt(w.labour) + '</td><td>' + esc(w.notes || '') + '</td></tr>').join('')) : '') +
+    (r.materials.length ? '<div class="card-title" style="font-size:13px;margin-bottom:6px">Materials</div>' + tbl(['Material','Qty','Unit cost','Total'], r.materials.map(m => '<tr><td>' + esc(m.material) + '</td><td>' + m.qty + ' ' + esc(m.unit) + '</td><td>' + fmt(m.unitCost) + '</td><td>' + fmt(m.total) + '</td></tr>').join('')) : '') +
+    '<div class="card-title" style="font-size:13px;margin-bottom:6px">Status history</div>' + tbl(['When','From','To'], r.history.map(h => '<tr><td>' + esc(h.changedAt) + '</td><td>' + esc(h.oldStatus || '-') + '</td><td>' + statusBadge(h.newStatus) + '</td></tr>').join(''));
+  openModal(r.no, html);
+}
+async function afterAction(ok) { if (ok) { await openRequest(CUR.id); badges(); if ($('page-requests').classList.contains('active')) renderRequests(); if ($('page-assign').classList.contains('active')) renderAssignDesk(); } }
+const doPriority = async () => afterAction(await guard(() => api('/api/requests/' + CUR.id + '/priority', {method:'PUT', body:{priorityId:+val('d-prio')}}), 'Priority updated', CUR.no));
+const doAssign = async () => afterAction(await guard(() => api('/api/requests/' + CUR.id + '/assign', {method:'POST', body:{technicianId:+val('d-tech')}}), 'Technician assigned', CUR.no));
+const doUnassign = async () => afterAction(await guard(() => api('/api/requests/' + CUR.id + '/unassign', {method:'POST'}), 'Assignment withdrawn', CUR.no));
+const doStatus = async s => afterAction(await guard(() => api('/api/requests/' + CUR.id + '/status', {method:'PUT', body:{status:s}}), 'Status -> ' + s, CUR.no));
+const doClose = async () => afterAction(await guard(() => api('/api/requests/' + CUR.id + '/close', {method:'POST', body:{remarks:val('d-close')}}), 'Request closed', CUR.no));
+const doFeedback = async () => afterAction(await guard(() => api('/api/requests/' + CUR.id + '/feedback', {method:'POST', body:{rating:+val('d-rate'), comments:val('d-fb')}}), 'Feedback saved', CUR.no));
+async function doWork() {
+  const h = parseFloat(val('d-hrs')); if (!(h > 0 && h <= 24)) { toast('Invalid hours', 'Enter hours between 0.25 and 24', 'warn'); return; }
+  afterAction(await guard(() => api('/api/requests/' + CUR.id + '/worklog', {method:'POST', body:{hours:h, notes:val('d-notes')}}), 'Work logged', h + ' h on ' + CUR.no));
+}
+async function doMaterial() {
+  const q = parseInt(val('d-qty')); if (!(q >= 1)) { toast('Invalid quantity', 'Quantity must be at least 1', 'warn'); return; }
+  const ok = await guard(() => api('/api/requests/' + CUR.id + '/materials', {method:'POST', body:{materialId:+val('d-mat'), quantity:q}}), 'Material recorded', 'Stock reduced');
+  if (ok) await loadBootstrap(); afterAction(ok);
+}
+
+/* ---------------- assignment desk ---------------- */
+async function renderAssignDesk() {
+  let d; try { d = await api('/api/requests?status=OPEN'); } catch (e) { toast('Load failed', e.message, 'error'); return; }
+  const rows = d.requests.sort((a, b) => a.priorityRank - b.priorityRank || b.ageHours - a.ageHours);
+  if (!rows.length) { $('assign-list').innerHTML = '<div class="empty-state"><div class="empty-icon">&#x2705;</div><div class="empty-title">No unassigned requests</div></div>'; return; }
+  const techs = await Promise.all(rows.map(r => api('/api/requests/' + r.id + '/technicians')));
+  $('assign-list').innerHTML = rows.map((r, i) => '<div class="wl-item"><div class="wl-pos' + (i === 0 ? ' top' : '') + '">' + (i + 1) + '</div><div class="wl-info"><div class="wl-name">' + esc(r.no) + ' &mdash; ' + esc(r.title) + '</div><div class="wl-detail">' + prioTag(r.priority) + ' &bull; ' + esc(r.category) + ' &bull; ' + esc(r.buildingCode) + '/' + esc(r.roomNo) + ' &bull; waiting ' + ageTxt(r.ageHours) + '</div></div>' +
+    '<select class="form-control" style="width:290px" id="as-' + r.id + '">' + techs[i].technicians.map(t => opt(t.id, t.name + ' - ' + t.category + ' (' + t.openJobs + '/' + t.maxJobs + ')')).join('') + '</select>' +
+    '<div class="wl-actions"><button class="tbl-btn tbl-btn-green" onclick="quickAssign(' + r.id + ')">Assign</button><button class="tbl-btn tbl-btn-orange" onclick="openRequest(' + r.id + ')">Open</button></div></div>').join('');
+}
+async function quickAssign(id) { const ok = await guard(() => api('/api/requests/' + id + '/assign', {method:'POST', body:{technicianId:+val('as-' + id)}}), 'Technician assigned', 'Request moved to ASSIGNED'); if (ok) { renderAssignDesk(); badges(); } }
+
+/* ---------------- CRUD manager ---------------- */
+const ENT = {
+  technicians: {label:'Technicians', url:'/api/technicians', key:'technicians', cols:['ID','Name','Phone','Trade','Rate/h','Max jobs','Active'],
+    row:t => [t.id, t.name, t.phone || '-', t.category, fmt(t.rate), t.maxJobs, t.active ? 'Yes' : 'No'], canEdit:true,
+    fields:[['name','Name','text'],['phone','Phone','text'],['categoryId','Trade','cat'],['rate','Hourly rate','number'],['maxJobs','Max open jobs','number'],['active','Active','bool']]},
+  materials: {label:'Materials', url:'/api/materials', key:'materials', cols:['ID','Name','Unit','Unit cost','Stock'],
+    row:m => [m.id, m.name, m.unit, fmt(m.cost), m.stock], canEdit:true,
+    fields:[['name','Name','text'],['unit','Unit','text'],['cost','Unit cost','number'],['stock','Stock qty','number']]},
+  buildings: {label:'Buildings', url:'/api/buildings', key:'buildings', cols:['ID','Code','Name','Floors','Rooms'], row:b => [b.id, b.code, b.name, b.floors, b.rooms],
+    fields:[['code','Code','text'],['name','Name','text'],['floors','Floors','number']]},
+  rooms: {label:'Rooms', url:'/api/rooms', key:'rooms', cols:['ID','Building','Room','Floor','Type','Requests'], row:r => [r.id, r.buildingCode, r.roomNo, r.floor, r.type, r.requests],
+    fields:[['buildingId','Building','bld'],['roomNo','Room number','text'],['floor','Floor','number'],['type','Type','rtype']]},
+  users: {label:'Users', url:'/api/users', key:'users', cols:['ID','Name','Email','Phone','Role','Requests'], row:u => [u.id, u.name, u.email, u.phone || '-', u.role, u.requests],
+    fields:[['name','Name','text'],['email','Email','text'],['phone','Phone','text'],['role','Role','role']]},
+};
+let ENTITY = 'technicians', ROWS = [];
+async function renderCRUD() {
+  $('crud-tabs').innerHTML = Object.entries(ENT).map(([k, e]) => '<div class="etab' + (k === ENTITY ? ' active' : '') + '" onclick="ENTITY=\'' + k + '\';renderCRUD()">' + e.label + '</div>').join('');
+  const e = ENT[ENTITY];
+  try { ROWS = (await api(e.url))[e.key]; } catch (x) { toast('Load failed', x.message, 'error'); return; }
+  $('crud-thead').innerHTML = '<tr>' + e.cols.map(c => '<th>' + c + '</th>').join('') + '<th>Actions</th></tr>';
+  $('crud-tbody').innerHTML = ROWS.map((r, i) => '<tr>' + e.row(r).map(c => '<td>' + esc(c) + '</td>').join('') + '<td>' + (e.canEdit ? '<button class="tbl-btn tbl-btn-orange" onclick="openEdit(' + i + ')">Edit</button>' : '') + '<button class="tbl-btn tbl-btn-red" onclick="delRow(' + r.id + ')">Delete</button></td></tr>').join('');
+}
+function fieldHtml(f, v) {
+  const [k, label, type] = f; let inp;
+  if (type === 'cat') inp = '<select class="form-control" id="c-' + k + '">' + DB.categories.map(c => opt(c.id, c.name, c.id === v)).join('') + '</select>';
+  else if (type === 'bld') inp = '<select class="form-control" id="c-' + k + '">' + DB.buildings.map(b => opt(b.id, b.code + ' - ' + b.name, b.id === v)).join('') + '</select>';
+  else if (type === 'rtype') inp = '<select class="form-control" id="c-' + k + '">' + ['Classroom','Lab','Office','Hostel','Washroom','Library','Auditorium','Other'].map(x => opt(x, x, x === v)).join('') + '</select>';
+  else if (type === 'role') inp = '<select class="form-control" id="c-' + k + '">' + ['STUDENT','FACULTY','STAFF','ADMIN'].map(x => opt(x, x, x === v)).join('') + '</select>';
+  else if (type === 'bool') inp = '<select class="form-control" id="c-' + k + '">' + opt('1', 'Yes', v !== false) + opt('0', 'No', v === false) + '</select>';
+  else inp = '<input class="form-control" id="c-' + k + '" type="' + (type === 'number' ? 'number' : 'text') + '" step="any" value="' + esc(v == null ? '' : v) + '">';
+  return '<div class="form-group"><label class="form-label">' + label + '</label>' + inp + '</div>';
+}
+let EDIT_ID = null;
+function openAdd() { EDIT_ID = null; crudModal('Add ' + ENT[ENTITY].label.slice(0, -1), {}); }
+function openEdit(i) { EDIT_ID = ROWS[i].id; crudModal('Edit ' + ENT[ENTITY].label.slice(0, -1), ROWS[i]); }
+function crudModal(title, r) {
+  const e = ENT[ENTITY];
+  const editable = EDIT_ID && ENTITY === 'materials' ? ['cost', 'stock'] : null;   // material name is its identity
+  openModal(title, e.fields.filter(f => !editable || editable.includes(f[0])).map(f => fieldHtml(f, f[0] === 'active' ? (r.active === undefined ? true : !!r.active) : r[f[0]])).join('') + '<button class="btn-sm btn-crimson" style="width:100%;padding:12px" onclick="saveRow()">Save</button>');
+  $('modal-box').style.maxWidth = '580px';
+}
+async function saveRow() {
+  const e = ENT[ENTITY], body = {};
+  e.fields.forEach(f => { const el = $('c-' + f[0]); if (!el) return; const v = el.value;
+    body[f[0]] = f[2] === 'number' || f[2] === 'cat' || f[2] === 'bld' ? (v === '' ? null : Number(v)) : f[2] === 'bool' ? v === '1' : v; });
+  const ok = await guard(() => api(EDIT_ID ? e.url + '/' + EDIT_ID : e.url, {method: EDIT_ID ? 'PUT' : 'POST', body}), 'Saved', e.label);
+  if (ok) { closeModal(); await loadBootstrap(); renderCRUD(); }
+}
+async function delRow(id) {
+  if (!confirm('Delete this record?')) return;
+  const ok = await guard(() => api(ENT[ENTITY].url + '/' + id, {method:'DELETE'}), 'Deleted', ENT[ENTITY].label);
+  if (ok) { await loadBootstrap(); renderCRUD(); }
+}
+
+/* ---------------- reports ---------------- */
+const REPS = {
+  pending:{label:'Pending Requests', url:'/api/reports/pending'}, ageing:{label:'Ageing', url:'/api/reports/ageing'},
+  response:{label:'Response Time', url:'/api/reports/response-time'}, load:{label:'Technician Load', url:'/api/reports/technician-load'},
+  building:{label:'Building Cost', url:'/api/reports/building-cost'}, material:{label:'Material Use', url:'/api/reports/material-use'},
+  feedback:{label:'Feedback', url:'/api/reports/feedback'},
+};
+let REP = 'pending';
+const T = (h, rows) => '<div class="table-wrap"><table><thead><tr>' + h.map(x => '<th>' + x + '</th>').join('') + '</tr></thead><tbody>' + (rows || '<tr><td colspan="' + h.length + '" class="text-muted">No data</td></tr>') + '</tbody></table></div>';
+async function renderReports() {
+  try {
+    const s = await api('/api/reports/summary');
+    $('rep-kpis').innerHTML = [['Labour cost', fmt(s.labour), 'text-cognac'], ['Material cost', fmt(s.material), 'text-amber'], ['Avg resolution', s.avgResolutionHours + ' h', 'text-emerald'], ['Avg rating', s.avgRating ? s.avgRating + ' / 5' : '-', 'text-crimson']]
+      .map(x => '<div class="report-metric"><div class="report-num ' + x[2] + '">' + x[1] + '</div><div class="report-label">' + x[0] + '</div></div>').join('');
+  } catch (e) { toast('Load failed', e.message, 'error'); }
+  $('rep-tabs').innerHTML = Object.entries(REPS).map(([k, r]) => '<div class="etab' + (k === REP ? ' active' : '') + '" onclick="REP=\'' + k + '\';renderReports()">' + r.label + '</div>').join('');
+  let d; try { d = await api(REPS[REP].url); } catch (e) { toast('Load failed', e.message, 'error'); return; }
+  let h = '';
+  if (REP === 'pending') h = T(['Request','Title','Priority','Status','Location','Age','SLA'], d.rows.map(r => '<tr><td class="mono text-cognac">' + esc(r.no) + '</td><td>' + esc(r.title) + '</td><td>' + prioTag(r.priority) + '</td><td>' + statusBadge(r.status) + '</td><td>' + esc(r.building) + ' / ' + esc(r.roomNo) + '</td><td>' + ageTxt(r.ageHours) + '</td><td>' + (r.overdue ? '<span class="text-crimson fw-700">OVERDUE</span>' : '<span class="text-emerald">Within ' + r.sla + 'h</span>') + '</td></tr>').join(''));
+  if (REP === 'ageing') { const m = Math.max(1, ...d.rows.map(r => r.count)); h = '<div class="bar-chart">' + d.rows.map(r => '<div class="bar-col"><div class="bar-val">' + r.count + '</div><div class="bar" style="height:' + Math.max(4, r.count / m * 100) + 'px;background:linear-gradient(180deg,var(--cognac),var(--crimson-d))"></div><div class="bar-label">' + r.bucket + '</div></div>').join('') + '</div>'; }
+  if (REP === 'response') h = T(['Priority','SLA (h)','Requests','Avg response (h)','Within SLA'], d.rows.map(r => '<tr><td>' + prioTag(r.priority) + '</td><td>' + r.sla + '</td><td>' + r.requests + '</td><td class="mono">' + r.avgHours + '</td><td>' + r.withinSla + ' / ' + r.requests + '</td></tr>').join(''));
+  if (REP === 'load') h = T(['Technician','Trade','Open jobs','Load','Total jobs','Closed'], d.rows.map(r => '<tr><td>' + esc(r.name) + (r.active ? '' : ' <span class="text-muted">(inactive)</span>') + '</td><td>' + esc(r.category) + '</td><td>' + r.openJobs + ' / ' + r.maxJobs + '</td><td style="min-width:140px"><div class="progress-bar"><div class="progress-fill ' + (r.loadPct >= 80 ? 'fill-red' : r.loadPct >= 50 ? 'fill-amber' : 'fill-green') + '" style="width:' + Math.min(100, r.loadPct) + '%"></div></div></td><td>' + r.totalJobs + '</td><td>' + r.closedJobs + '</td></tr>').join(''));
+  if (REP === 'building') h = T(['Building','Requests','Labour','Materials','Total'], d.rows.map(r => '<tr><td>' + esc(r.code) + ' &mdash; ' + esc(r.building) + '</td><td>' + r.requests + '</td><td>' + fmt(r.labour) + '</td><td>' + fmt(r.material) + '</td><td class="fw-700 text-cognac">' + fmt(r.total) + '</td></tr>').join(''));
+  if (REP === 'material') h = T(['Material','Qty used','Cost','In stock'], d.rows.map(r => '<tr><td>' + esc(r.material) + '</td><td>' + r.used + ' ' + esc(r.unit) + '</td><td>' + fmt(r.cost) + '</td><td>' + r.stock + '</td></tr>').join(''));
+  if (REP === 'feedback') h = '<div class="card-title" style="margin-bottom:8px;font-size:13px">Average rating per technician</div>' + T(['Technician','Responses','Avg rating'], d.byTechnician.map(r => '<tr><td>' + esc(r.technician) + '</td><td>' + r.responses + '</td><td class="text-amber fw-700">' + r.avgRating + ' / 5</td></tr>').join('')) +
+    '<div class="card-title" style="margin:16px 0 8px;font-size:13px">Rating distribution</div>' + T(['Rating','Count'], d.distribution.map(r => '<tr><td>' + r.rating + ' &#9733;</td><td>' + r.count + '</td></tr>').join('')) +
+    '<div class="card-title" style="margin:16px 0 8px;font-size:13px">Below-average feedback (nested query)</div>' + T(['Request','Title','Rating','Comment'], d.belowAverage.map(r => '<tr><td class="mono">' + esc(r.no) + '</td><td>' + esc(r.title) + '</td><td>' + r.rating + '</td><td>' + esc(r.comments || '') + '</td></tr>').join(''));
+  $('rep-body').innerHTML = h;
+}
+
+/* ---------------- boot ---------------- */
+(async function () {
+  try { await loadBootstrap(); } catch (e) { toast('Connection failed', 'Could not reach the API server: ' + e.message, 'error'); return; }
+  [['System ready - connected to MySQL (CampusMaintenanceDB)', 'ok'], ['TRIGGER trg_request_status_check - ACTIVE', 'ok'], ['TRIGGER trg_assignment_control - ACTIVE', 'ok'], ['Actions below are logged live.', 'info']].forEach((l, i) => setTimeout(() => logLine(l[0], l[1]), i * 120));
+  renderDashboard();
+})();
+
+</script>
+</body>
+</html>
