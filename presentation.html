@@ -1,81 +1,1500 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Campus Facility Maintenance Request Management System — DBMS Review 1</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#090D16;--sf:#0F172A;--card:rgba(18,26,47,.75);--bd:rgba(99,102,241,.22);--pr:#6366F1;--se:#06B6D4;--ac:#F43F5E;--em:#10B981;--am:#F59E0B;--tx:#F8FAFC;--t2:#94A3B8;--t3:#64748B}
-*{box-sizing:border-box;margin:0;padding:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-html,body{height:100%}body{background:var(--bg);color:var(--tx);overflow:hidden;position:relative}
-.orb{position:fixed;border-radius:50%;filter:blur(120px);opacity:.4;pointer-events:none}.o1{top:-10%;left:-5%;width:480px;height:480px;background:#4f46e5}.o2{bottom:-15%;right:-5%;width:560px;height:560px;background:#06b6d4}
-.top{position:fixed;top:14px;left:28px;right:28px;display:flex;justify-content:space-between;align-items:center;z-index:50;pointer-events:none;font-size:12px}
-.badge{background:rgba(99,102,241,.15);border:1px solid var(--bd);color:#c7d2fe;padding:5px 12px;border-radius:99px;font-weight:600}.cnt{color:var(--t2);font-family:'JetBrains Mono',monospace}
-.slide{position:absolute;inset:0;padding:60px 40px 84px;overflow:auto;opacity:0;visibility:hidden;transform:translateX(30px);transition:.45s;z-index:1}
-.slide.on{opacity:1;visibility:visible;transform:none}.in{max-width:1100px;margin:0 auto}
-h1{font-size:clamp(28px,5vw,52px);line-height:1.1;font-weight:800;background:linear-gradient(90deg,#fff,#a5b4fc,#67e8f9);-webkit-background-clip:text;background-clip:text;color:transparent}
-h2{font-size:clamp(22px,3vw,32px);font-weight:800}.sub{color:var(--t2);margin:4px 0 18px}h3{font-size:15px;margin-bottom:8px}
-.title{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:16px;min-height:100%}
-.chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.chip{border:1px solid var(--bd);background:var(--card);color:#c7d2fe;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer}.chip.on{background:var(--pr);color:#fff;border-color:var(--pr)}
-.g{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:16px;backdrop-filter:blur(8px)}
-.card:hover{border-color:rgba(99,102,241,.6)}.card p,.card li{font-size:13.5px;color:var(--t2);line-height:1.55}.card ul{padding-left:18px}.card b{color:var(--tx)}
-.tag{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--se);margin-bottom:6px}.bad{color:var(--ac)}.good{color:var(--em)}
-.ent{cursor:pointer;padding:10px 12px;border-radius:12px;border:1px solid var(--bd);background:var(--card);font-size:13px;font-weight:700}.ent.on{border-color:var(--se);box-shadow:0 0 18px rgba(6,182,212,.35)}.ent small{display:block;color:var(--t3);font-weight:500;font-size:11px}
-.ex{display:grid;grid-template-columns:1fr 330px;gap:14px}@media(max-width:860px){.ex{grid-template-columns:1fr}}
-.pk{color:var(--am);font-weight:700;font-family:'JetBrains Mono',monospace}.fk{color:var(--se);font-family:'JetBrains Mono',monospace}.at{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--t2)}
-table{border-collapse:collapse;width:100%;font-size:12.5px}th,td{padding:6px 8px;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);white-space:nowrap}th{color:var(--se);font-size:11px;text-transform:uppercase}.tw{overflow-x:auto}
-svg text{font-family:'Plus Jakarta Sans',sans-serif}
-.dock{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:6px;align-items:center;background:rgba(15,23,42,.85);border:1px solid var(--bd);border-radius:99px;padding:6px 10px;z-index:60;backdrop-filter:blur(10px)}
-.dock button{background:none;border:0;color:var(--t2);width:30px;height:30px;border-radius:50%;cursor:pointer;font-weight:700;font-size:13px}.dock button.on{background:var(--pr);color:#fff}.dock button:hover{color:#fff}
-.pitch{position:fixed;right:20px;bottom:76px;width:min(420px,calc(100vw - 40px));background:rgba(9,13,22,.96);border:1px solid var(--se);border-radius:16px;padding:16px;z-index:70;display:none;max-height:50vh;overflow:auto}.pitch.on{display:block}.pitch p{font-size:14px;line-height:1.6;color:#e2e8f0;font-style:italic}.pitch h3{color:var(--se)}
-</style></head><body>
-<div class="orb o1"></div><div class="orb o2"></div>
-<div class="top"><span class="badge">DBMS Project 41 · Review 1</span><span class="cnt" id="cnt"></span></div>
-<main id="deck"></main>
-<div class="dock" id="dock"></div>
-<div class="pitch" id="pitch"><h3 id="ph"></h3><p id="pt"></p></div>
-<script>
-// ----- data -----
-const G=["Places & People","Request Core","Work & Materials","Audit & Feedback"];
-const E=[["Building",0,"*building_id,name","Campus building that houses rooms","building"],["Room",0,"*room_id,^building_id,room_no","Room or hall inside a building","room"],["Asset",0,"*asset_id,^room_id,name","Fixed item such as a fan, projector or tap","asset"],["User",0,"*user_id,name,email,role","Person who raises requests (Student, Staff, Admin)","app_user"],["Technician",0,"*tech_id,name,phone,^category_id","Maintenance staff with a main skill area","technician"],["Category",1,"*category_id,name","Fault type: Electrical, Plumbing, Furniture, Classroom AV","category"],["Priority",1,"*priority_id,name,sla_hours","Urgency level and target response time","priority"],["Request",1,"*request_id,request_no,^user_id,^room_id,^asset_id,^category_id,^priority_id,description,status,created_at,closed_at,closure_remarks","The complaint itself: the hub of the system","request"],["Assignment",1,"*assign_id,^request_id,^tech_id,assigned_at","Allocation of a request to a technician (can be reassigned)","assignment"],["Work Log",2,"*log_id,^assign_id,note,hours,logged_at","Work done during an assignment","work_log"],["Material",2,"*material_id,name,unit_cost","Spare parts and consumables","material"],["Material Use",2,"*use_id,^log_id,^material_id,qty","Associative entity: resolves Work Log M:N Material","material_use"],["Status History",3,"*hist_id,^request_id,old_status,new_status,changed_at","Audit trail of every status change","status_history"],["Feedback",3,"*^request_id,rating,comments","Requester rating after closure (1 to 5)","feedback"]];
-const R=[["Building","Room","has","1","N"],["Room","Asset","contains","1","N"],["Room","Request","located in","1","N"],["Asset","Request","concerns","1","N"],["User","Request","raises","1","N"],["Category","Request","classified as","1","N"],["Priority","Request","urgency","1","N"],["Request","Status History","tracked by","1","N"],["Request","Feedback","rated by","1","0..1"],["Request","Assignment","allocated","1","N"],["Technician","Assignment","performs","1","N"],["Category","Technician","skilled in","1","N"],["Assignment","Work Log","records","1","N"],["Work Log","Material Use","consumes","1","N"],["Material","Material Use","used in","1","N"]];
-const P={Building:[110,60],Room:[430,60],Asset:[750,60],User:[110,260],Priority:[110,400],Category:[110,560],Request:[430,260],Feedback:[430,420],"Status History":[750,400],Assignment:[750,560],Technician:[430,560],"Work Log":[980,560],"Material Use":[980,400],Material:[980,240]};
-const attrs=e=>e[2].split(',').map(a=>({k:a[0]=='*'?'PK':a[0]=='^'?'FK':'',n:a.replace(/[*^]/g,'')}));
-const T=(h,r)=>`<div class="tw"><table><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr>${r.map(a=>`<tr>${a.map(x=>`<td>${x}</td>`).join('')}</tr>`).join('')}</table></div>`;
-const L=a=>`<ul>${a.map(x=>`<li>${x}</li>`).join('')}</ul>`;
-// ----- slides -----
-const S=[];
-S.push(()=>`<div class="title"><span class="badge">Database Management Systems · Review 1</span><h1>Campus Facility Maintenance<br>Request Management System</h1><p class="sub" style="margin:0">Controlled, Auditable Complaint-to-Closure Relational Database</p><div class="chips"><span class="chip">3NF Normalized</span><span class="chip">14 Entities</span><span class="chip">Status &amp; Assignment Control</span><span class="chip">MySQL 8.0 DDL Ready</span></div><p class="sub" style="margin:0;font-size:13px">Sushil Pal · 25WU0101141 · CSE Panthers Core · Faculty: Mrs. Sahithi Mam</p><p class="sub" style="margin:0;font-size:12px">Navigate with ← → or the bottom dock • Press P for Pitch</p></div>`);
-S.push(()=>`<div class="in"><h2>1. Objectives &amp; Target Users</h2><p class="sub">Functional boundaries and actor modelling</p><div class="g"><div class="card"><div class="tag">Primary objectives</div>${L(["Conceptual ER modelling: 14 entities, one M:N resolved by Material Use","3NF normalization: no transitive dependency","Business rules in the database: keys, UNIQUE, CHECK, DEFAULT, triggers","Joins, aggregates, views and management reports","Java front-end for the full request life cycle"])}</div>${[["Requester (Student / Staff)","Logs a request, tracks status, gives feedback after closure"],["Facility Administrator","Sets priority, assigns technicians, monitors pending and ageing work, closes requests"],["Technician","Views jobs, updates status, records work and materials used"],["Management","Reads response time, technician load, building cost, material use, feedback"]].map(u=>`<div class="card"><div class="tag">Actor</div><h3>${u[0]}</h3><p>${u[1]}</p></div>`).join('')}</div></div>`);
-S.push(()=>`<div class="in"><h2>2. Problem Identification &amp; Scope</h2><p class="sub">Replacing paper registers with a controlled relational database</p><div class="g">${[["Lost or duplicate requests","Unique request numbers (UNIQUE) and a single request table"],["Informal assignment","Assignment table plus a rule: Open requests only, maximum 3 active jobs per technician"],["No record of work and cost","Work Log and Material Use record hours, materials and unit cost"],["No visibility or reporting","Status history, ageing, response time and feedback computed by views"]].map(p=>`<div class="card"><div class="tag bad">Problem</div><p><b>${p[0]}</b></p><div class="tag good" style="margin-top:8px">Solution</div><p>${p[1]}</p></div>`).join('')}<div class="card"><div class="tag">In scope</div><p>Requests against buildings, rooms and assets; priority; technician assignment; work logs and materials; status tracking; closure details; feedback; management reports.</p></div><div class="card"><div class="tag">Out of scope</div><p>Technician payroll and attendance, procurement and stock purchasing, online payments, ERP integration.</p></div></div></div>`);
-S.push(()=>`<div class="in"><h2>3. Interactive Conceptual ER Explorer</h2><p class="sub">Click any entity to inspect its attributes, keys and relationships</p><div class="chips" id="fl" style="justify-content:flex-start;margin-bottom:12px"></div><div class="ex"><div class="g" id="eg" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr));align-content:start"></div><div class="card" id="ed"></div></div><p class="sub" style="font-size:12px;margin-top:10px">Tip: PK = primary key, FK = foreign key. Material Use is the associative entity.</p></div>`);
-S.push(()=>`<div class="in"><h2>4. Conceptual E-R Diagram (Chen's Model)</h2><p class="sub">Entities, associative entity, relationships and cardinalities</p><div class="card" style="padding:8px"><div id="chen"></div></div><div class="chips" style="margin-top:10px"><span class="chip">▭ Entity</span><span class="chip">▭▭ Associative entity</span><span class="chip">◇ Relationship</span><span class="chip">1 / N / 0..1 Cardinality</span></div></div>`);
-S.push(()=>`<div class="in"><h2>5. Initial Relational Schema &amp; 3NF Verification</h2><p class="sub">Normalized tables, primary keys and foreign key constraints</p><div class="g" style="grid-template-columns:repeat(auto-fill,minmax(210px,1fr))">${E.map(e=>`<div class="card" style="padding:12px"><div class="tag">${e[4]}</div><div class="at">${attrs(e).map(a=>a.k=='PK'?`<div class="pk">${a.n} <small>PK</small></div>`:a.k=='FK'?`<div class="fk">${a.n} <small>FK</small></div>`:`<div>${a.n}</div>`).join('')}</div></div>`).join('')}</div><div class="card" style="margin-top:14px"><div class="tag">3NF verification</div>${L(["1NF: work notes, materials and status changes are separate rows, not repeating groups","2NF: material name and cost depend only on material_id, so they live in Material","3NF: building name via Room, SLA hours via Priority, skill via Technician, email and role via User","BCNF holds: the only other determinants (name, email, request_no) are unique keys"])}</div></div>`);
-S.push(()=>`<div class="in"><h2>6. Sample Live Data &amp; Verification</h2><p class="sub">Proof that the model holds realistic data and the rules</p><div class="g" style="grid-template-columns:repeat(auto-fit,minmax(340px,1fr))"><div class="card"><div class="tag">Sample requests</div>${T(["Request","Room","Category","Priority","Status"],[["REQ-0001","Main Block 101","Electrical","High","Closed"],["REQ-0002","Science Lab-1","Classroom AV","Medium","Closed"],["REQ-0005","Science 204","Electrical","Critical","In Progress"],["REQ-0007","Library Reading Hall","Electrical","High","Assigned"],["REQ-0009","Sports Gym","Furniture","Low","Open"]])}</div><div class="card"><div class="tag">Assignments and work</div>${T(["Request","Technician","Work","Hours"],[["REQ-0001","Ramesh","Replaced capacitor","1.5"],["REQ-0002","Imran","Replaced projector lamp","2.0"],["REQ-0003","Suresh","Replaced tap washer","1.0"],["REQ-0005","Ramesh","Replaced socket","2.0"]])}</div><div class="card"><div class="tag">Status history of REQ-0001</div>${T(["Old","New"],[["-","Open"],["Open","Assigned"],["Assigned","In Progress"],["In Progress","Closed"]])}</div><div class="card"><div class="tag">Rule checks</div>${L(["✔ Request numbers are unique","✔ Closed request has closure date and remarks","✔ Status moves only Open → Assigned → In Progress → Closed","✔ A technician holds at most 3 active jobs","✔ Feedback only after closure"])}</div></div></div>`);
-S.push(()=>`<div class="in"><h2>7. Review 1 Conclusion &amp; Review 2 Roadmap</h2><p class="sub">Ready for DDL execution, constraints and SQL</p><div class="g"><div class="card"><div class="tag good">Review 1 completed</div>${L(["✔ Problem, scope, objectives and users","✔ Conceptual ER model: 14 entities, 15 relationships","✔ Initial relational schema in 3NF","✔ MySQL DDL script (review1_schema.sql)"])}</div><div class="card"><div class="tag">Review 2 next</div>${L(["Functional dependencies and data dictionary","DDL with CHECK, UNIQUE, NOT NULL and DEFAULT","Triggers: status flow, assignment control, feedback rule","Sample data, joins, subqueries, views","Indexes and prototype demonstration"])}</div><div class="card"><div class="tag">Review 3 later</div>${L(["Java JDBC application: CRUD, search, validation, reports","Final report, demo video and viva"])}</div></div></div>`);
-const PITCH=["Good morning everyone. I am presenting the conceptual design of our Campus Facility Maintenance Request Management System for Review 1. It replaces paper complaint registers with a controlled database.","Our objective is a normalized relational database with business rules and a Java front-end. The main users are requesters, the facility administrator, technicians and management.","The problems today are lost requests, informal assignment, no record of work and cost, and no reporting. Each one maps to a database feature, shown on the right of each card.","This explorer lets us inspect any of the 14 entities. The Request is the hub. Material Use is the associative entity that resolves the many-to-many link between work and materials.","This is the Chen-style ER diagram. Every relationship is one-to-many, except Request to Feedback, which is one to at most one. Cardinalities are marked on each line.","The relational schema has 14 tables with primary and foreign keys. It is in third normal form: nothing depends on a non-key column, and derived values like cost are not stored.","Sample data shows requests in different states, assignments, work and history. The rule checks confirm unique numbers, closure details, ordered status changes and the 3-job limit.","In summary, Review 1 delivers the full conceptual and relational model and the DDL. Review 2 adds constraints, triggers, sample data and queries; Review 3 adds the Java application. Thank you."];
-// ----- engine -----
-let cur=0,fl=-1,se=7;
-const deck=document.getElementById('deck');
-S.forEach((f,i)=>{const s=document.createElement('section');s.className='slide'+(i?'':' on');s.id='s'+i;s.innerHTML=f();deck.appendChild(s)});
-const dock=document.getElementById('dock');
-dock.innerHTML='<button id="pv">‹</button>'+S.map((_,i)=>`<button data-i="${i}">${i+1}</button>`).join('')+'<button id="nx">›</button><button id="pb" title="Pitch (P)">P</button>';
-function go(i){cur=Math.max(0,Math.min(S.length-1,i));document.querySelectorAll('.slide').forEach((s,k)=>s.classList.toggle('on',k==cur));dock.querySelectorAll('[data-i]').forEach(b=>b.classList.toggle('on',+b.dataset.i==cur));document.getElementById('cnt').textContent=(cur+1)+' / '+S.length;document.getElementById('ph').textContent='Presenter Pitch — Slide '+(cur+1);document.getElementById('pt').textContent='“'+PITCH[cur]+'”'}
-dock.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.id=='pv')go(cur-1);else if(b.id=='nx')go(cur+1);else if(b.id=='pb')document.getElementById('pitch').classList.toggle('on');else go(+b.dataset.i)};
-document.onkeydown=e=>{if(e.key=='ArrowRight'||e.key==' ')go(cur+1);else if(e.key=='ArrowLeft')go(cur-1);else if(e.key=='p'||e.key=='P')document.getElementById('pitch').classList.toggle('on')};
-// explorer
-function exp(){const eg=document.getElementById('eg');document.getElementById('fl').innerHTML=['All (14)',...G].map((g,i)=>`<span class="chip ${fl==i-1?'on':''}" data-f="${i-1}">${g}</span>`).join('');
-eg.innerHTML=E.map((e,i)=>({e,i})).filter(o=>fl<0||o.e[1]==fl).map(o=>`<div class="ent ${o.i==se?'on':''}" data-e="${o.i}">${o.e[0]}<small>${G[o.e[1]]}</small></div>`).join('');
-const e=E[se],rl=R.filter(r=>r[0]==e[0]||r[1]==e[0]);
-document.getElementById('ed').innerHTML=`<div class="tag">${e[1]==2&&e[0]=='Material Use'?'Associative entity':'Entity'} · table ${e[4]}</div><h3 style="font-size:18px">${e[0]}</h3><p>${e[3]}</p><div class="at" style="margin:10px 0">${attrs(e).map(a=>a.k=='PK'?`<div class="pk">${a.n} · PK</div>`:a.k=='FK'?`<div class="fk">${a.n} · FK</div>`:`<div>${a.n}</div>`).join('')}</div><div class="tag">Relationships</div><ul style="padding-left:18px;font-size:13px;color:var(--t2)">${rl.map(r=>`<li>${r[0]} ${r[3]} — <i>${r[2]}</i> — ${r[4]} ${r[1]}</li>`).join('')}</ul>`}
-document.getElementById('s3').onclick=e=>{const f=e.target.closest('[data-f]'),n=e.target.closest('[data-e]');if(f){fl=+f.dataset.f;exp()}if(n){se=+n.dataset.e;exp()}};exp();
-// Chen diagram
-(function(){const W=64,H=20,ln=[],dm=[],bx=[],cd=[];
-R.forEach(r=>{const a=P[r[0]],b=P[r[1]],m=[(a[0]+b[0])/2,(a[1]+b[1])/2];
-ln.push(`<path d="M${a[0]} ${a[1]}L${m[0]} ${m[1]}L${b[0]} ${b[1]}" stroke="#64748B" stroke-width="1.3" fill="none"/>`);
-dm.push(`<polygon points="${m[0]},${m[1]-15} ${m[0]+22},${m[1]} ${m[0]},${m[1]+15} ${m[0]-22},${m[1]}" fill="#0F172A" stroke="#F59E0B" stroke-width="1.5"/><text x="${m[0]+26}" y="${m[1]+4}" font-size="11" fill="#F59E0B" stroke="#090D16" stroke-width="4" paint-order="stroke">${r[2]}</text>`);
-[[a,b,r[3]],[b,a,r[4]]].forEach(([p,q,t])=>{const dx=(q[0]+p[0])/2-p[0],dy=(q[1]+p[1])/2-p[1],s=Math.min(W/Math.abs(dx||1e-9),H/Math.abs(dy||1e-9)),d=Math.hypot(dx,dy),u=[dx/d,dy/d],x=p[0]+dx*s+u[0]*16-u[1]*10,y=p[1]+dy*s+u[1]*16+u[0]*10;
-cd.push(`<text x="${x}" y="${y+4}" font-size="11" font-weight="700" fill="#67e8f9" text-anchor="middle" stroke="#090D16" stroke-width="3" paint-order="stroke">${t}</text>`)})});
-E.forEach(e=>{const p=P[e[0]],as=e[0]=='Material Use';bx.push(`<rect x="${p[0]-W}" y="${p[1]-H}" width="${2*W}" height="${2*H}" rx="6" fill="#0F172A" stroke="${e[0]=='Request'?'#06B6D4':'#6366F1'}" stroke-width="${e[0]=='Request'?2.5:1.8}"/>${as?`<rect x="${p[0]-W+5}" y="${p[1]-H+5}" width="${2*W-10}" height="${2*H-10}" rx="4" fill="none" stroke="#6366F1"/>`:''}<text x="${p[0]}" y="${p[1]+4}" text-anchor="middle" font-size="13" font-weight="700" fill="#F8FAFC">${e[0]}</text>`)});
-document.getElementById('chen').innerHTML=`<svg viewBox="0 0 1100 620" style="width:100%;height:auto;display:block" role="img" aria-label="Chen ER diagram with 14 entities and 15 relationships">${ln.join('')}${dm.join('')}${bx.join('')}${cd.join('')}</svg>`})();
-go(0);
-</script></body></html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Maintenance DBMS — Review 2: Integrity, DDL, Queries & Prototype</title>
+    <!-- Modern Google Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Cinzel:wght@600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            /* Warm Brown, Off-White, Crimson & Cognac Palette */
+            --bg-deep: #0D0A08;
+            --bg-surface: #17120F;
+            --bg-card: rgba(28, 21, 18, 0.78);
+            --bg-card-hover: rgba(38, 29, 24, 0.92);
+            --border-warm: rgba(217, 140, 85, 0.22);
+            --border-warm-bright: rgba(217, 140, 85, 0.55);
+            --border-crimson: rgba(225, 29, 72, 0.35);
+
+            /* Primary Accents */
+            --primary-cognac: #D97736;
+            --primary-glow: rgba(217, 119, 54, 0.38);
+            --secondary-amber: #F59E0B;
+            --crimson-red: #E11D48;
+            --crimson-glow: rgba(225, 29, 72, 0.4);
+            --ruby-light: #FDA4AF;
+            --emerald-green: #10B981;
+
+            /* Text Tokens */
+            --text-offwhite: #FDFBF7;
+            --text-warm-light: #EFE8E1;
+            --text-secondary: #C7BDB5;
+            --text-muted: #8C7D73;
+            --text-dark-brown: #38271E;
+
+            /* Glass & Elevation */
+            --glass-bg: rgba(23, 17, 14, 0.72);
+            --glass-border: rgba(245, 239, 235, 0.08);
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-offwhite);
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Ambient Glowing Background Orbs in Warm Brown & Crimson */
+        .bg-glow {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(140px);
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.42;
+            transition: all 1s ease;
+        }
+
+        .glow-1 {
+            top: -12%;
+            left: -8%;
+            width: 550px;
+            height: 550px;
+            background: radial-gradient(circle, #8C3A16 0%, transparent 70%);
+        }
+
+        .glow-2 {
+            bottom: -15%;
+            right: -6%;
+            width: 650px;
+            height: 650px;
+            background: radial-gradient(circle, #9F1239 0%, transparent 70%);
+        }
+
+        .glow-3 {
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 750px;
+            height: 750px;
+            background: radial-gradient(circle, #451A03 0%, transparent 75%);
+            opacity: 0.28;
+        }
+
+        /* Top Header & Navigation */
+        .top-nav {
+            position: fixed;
+            top: 18px;
+            left: 36px;
+            right: 36px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .project-badge {
+            pointer-events: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(28, 20, 16, 0.8);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid var(--border-warm);
+            padding: 8px 18px;
+            border-radius: 50px;
+            font-size: 0.84rem;
+            font-weight: 600;
+            color: var(--text-warm-light);
+            letter-spacing: 0.5px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .project-badge .badge-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: var(--crimson-red);
+            box-shadow: 0 0 10px var(--crimson-red);
+            animation: pulse-dot 2.2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        .top-actions {
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-btn {
+            background: rgba(28, 20, 16, 0.8);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-warm);
+            color: var(--text-warm-light);
+            padding: 8px 15px;
+            border-radius: 50px;
+            font-size: 0.84rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .header-btn:hover {
+            color: #FFFFFF;
+            border-color: var(--primary-cognac);
+            background: rgba(45, 30, 24, 0.95);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 18px var(--primary-glow);
+        }
+
+        .header-btn.btn-crimson:hover {
+            border-color: var(--crimson-red);
+            box-shadow: 0 4px 18px var(--crimson-glow);
+        }
+
+        /* Slide Deck Container */
+        .slide-deck {
+            position: relative;
+            width: 92vw;
+            max-width: 1440px;
+            height: 84vh;
+            max-height: 900px;
+            z-index: 10;
+        }
+
+        .slide {
+            position: absolute;
+            inset: 0;
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 35px 80px -15px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 248, 240, 0.12);
+            padding: 36px 46px;
+            opacity: 0;
+            transform: scale(0.96) translateY(24px);
+            transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            pointer-events: all;
+            z-index: 20;
+        }
+
+        /* Slide Header */
+        .slide-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-bottom: 1px solid rgba(217, 140, 85, 0.18);
+            padding-bottom: 14px;
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        .slide-title-group h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.4px;
+            background: linear-gradient(135deg, #FFFDFB 25%, #E5D5C8 70%, #D97736 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .slide-title-group h2 i {
+            -webkit-text-fill-color: initial;
+            color: var(--crimson-red);
+            font-size: 1.5rem;
+        }
+
+        .slide-subtitle {
+            font-size: 0.92rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .slide-tag {
+            background: rgba(225, 29, 72, 0.14);
+            border: 1px solid var(--border-crimson);
+            color: var(--ruby-light);
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .slide-tag.tag-amber {
+            background: rgba(217, 119, 54, 0.16);
+            border-color: var(--border-warm);
+            color: #FBD38D;
+        }
+
+        /* Content Body & Scrollbars */
+        .content-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow-y: auto;
+            padding-right: 6px;
+        }
+
+        .content-body::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .content-body::-webkit-scrollbar-thumb {
+            background: var(--border-warm);
+            border-radius: 4px;
+        }
+
+        /* Grids & Cards */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-warm);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(16px);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--crimson-red), var(--primary-cognac));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            background: var(--bg-card-hover);
+            border-color: var(--border-warm-bright);
+            box-shadow: 0 14px 28px -8px rgba(0, 0, 0, 0.6), 0 0 20px var(--primary-glow);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-offwhite);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        p {
+            font-size: 0.94rem;
+            color: var(--text-secondary);
+            line-height: 1.55;
+        }
+
+        /* Hero Slide 0 Special Styles */
+        .title-slide {
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .hero-icon-container {
+            width: 96px;
+            height: 96px;
+            border-radius: 28px;
+            background: linear-gradient(135deg, rgba(225, 29, 72, 0.25), rgba(217, 119, 54, 0.25));
+            border: 1px solid rgba(253, 251, 247, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.85rem;
+            color: #FDA4AF;
+            margin-bottom: 22px;
+            box-shadow: 0 16px 40px -6px rgba(225, 29, 72, 0.45);
+            animation: float-icon 4.2s ease-in-out infinite;
+        }
+
+        @keyframes float-icon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .title-slide h1 {
+            font-size: 2.9rem;
+            font-weight: 800;
+            line-height: 1.18;
+            letter-spacing: -0.8px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #FFFFFF 0%, #F5E8DC 45%, #D97736 80%, #E11D48 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            max-width: 950px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-warm-light);
+            font-weight: 400;
+            margin-bottom: 26px;
+        }
+
+        .hero-pill-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+        }
+
+        .hero-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(253, 251, 247, 0.04);
+            border: 1px solid rgba(217, 140, 85, 0.3);
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-size: 0.86rem;
+            font-weight: 600;
+            color: var(--text-offwhite);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero-pill i {
+            color: var(--crimson-red);
+        }
+
+        .hero-footer-tip {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-muted);
+            font-size: 0.86rem;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 6px 18px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .hero-footer-tip kbd {
+            background: rgba(253, 251, 247, 0.12);
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-offwhite);
+        }
+
+        /* -------------------------------------------------------------
+           SLIDE 1: 3NF & FUNCTIONAL DEPENDENCIES
+        ------------------------------------------------------------- */
+        .fd-box {
+            background: rgba(18, 14, 12, 0.9);
+            border: 1px solid var(--border-warm);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            margin-bottom: 10px;
+        }
+
+        .fd-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--primary-cognac);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .fd-math {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            color: var(--text-warm-light);
+            background: rgba(0, 0, 0, 0.4);
+            padding: 6px 10px;
+            border-radius: 6px;
+            border-left: 3px solid var(--crimson-red);
+            line-height: 1.5;
+        }
+
+        .nf-badge-3 {
+            background: rgba(16, 185, 129, 0.18);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #6EE7B7;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 4px;
+        }
+
+        /* -------------------------------------------------------------
+           SLIDE 2: CONCISE DATA DICTIONARY EXPLORER
+        ------------------------------------------------------------- */
+        .dict-container {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: 16px;
+            height: 100%;
+        }
+
+        .dict-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .dict-tab-btn {
+            background: rgba(28, 20, 16, 0.6);
+            border: 1px solid var(--border-warm);
+            color: var(--text-secondary);
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            text-align: left;
+            font-size: 0.82rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .dict-tab-btn:hover,
+        .dict-tab-btn.active {
+            background: rgba(217, 119, 54, 0.2);
+            border-color: var(--primary-cognac);
+            color: #FFFFFF;
+            box-shadow: 0 0 12px var(--primary-glow);
+        }
+
+        .dict-display-card {
+            background: rgba(15, 11, 9, 0.95);
+            border: 1px solid var(--border-warm);
+            border-radius: var(--radius-md);
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        /* Custom Tables */
+        table.dict-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+            margin-top: 10px;
+        }
+
+        table.dict-table th {
+            background: rgba(45, 30, 24, 0.8);
+            color: var(--text-warm-light);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.6px;
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-warm);
+        }
+
+        table.dict-table td {
+            padding: 8px 12px;
+            color: var(--text-warm-light);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        table.dict-table tr:hover td {
+            background: rgba(217, 119, 54, 0.08);
+        }
+
+        .type-pill {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            color: #FCD34D;
+            background: rgba(245, 158, 11, 0.12);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .key-pill-pk {
+            background: rgba(225, 29, 72, 0.2);
+            color: #FDA4AF;
+            border: 1px solid rgba(225, 29, 72, 0.4);
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 4px;
+        }
+
+        .key-pill-fk {
+            background: rgba(217, 119, 54, 0.2);
+            color: #FBD38D;
+            border: 1px solid rgba(217, 119, 54, 0.4);
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 4px;
+        }
+
+        /* -------------------------------------------------------------
+           SLIDE 3: INTEGRITY CONSTRAINTS & DDL ENFORCEMENT
+        ------------------------------------------------------------- */
+        .constraint-card {
+            background: rgba(24, 18, 15, 0.85);
+            border: 1px solid var(--border-warm);
+            border-radius: var(--radius-md);
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .constraint-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-bottom: 6px;
+        }
+
+        .cb-red { background: rgba(225, 29, 72, 0.2); color: #FDA4AF; border: 1px solid rgba(225, 29, 72, 0.35); }
+        .cb-cognac { background: rgba(217, 119, 54, 0.2); color: #FCD34D; border: 1px solid rgba(217, 119, 54, 0.35); }
+        .cb-emerald { background: rgba(16, 185, 129, 0.2); color: #A7F3D0; border: 1px solid rgba(16, 185, 129, 0.35); }
+
+        .sql-snippet-box {
+            background: #080605;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.74rem;
+            color: #E2E8F0;
+            margin-top: 6px;
+            line-height: 1.4;
+            overflow-x: auto;
+        }
+
+        .sql-kw { color: #E11D48; font-weight: 700; }
+        .sql-fn { color: #D97736; font-weight: 600; }
+        .sql-str { color: #10B981; }
+        .sql-num { color: #F59E0B; }
+
+        /* -------------------------------------------------------------
+           SLIDE 4: 7 CORE SQL QUERIES & VIEWS RUNNER
+        ------------------------------------------------------------- */
+        .query-runner-layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 16px;
+            height: 100%;
+        }
+
+        .query-list-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .query-tab-btn {
+            background: rgba(28, 20, 16, 0.6);
+            border: 1px solid var(--border-warm);
+            color: var(--text-secondary);
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            text-align: left;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .query-tab-btn:hover,
+        .query-tab-btn.active {
+            background: rgba(225, 29, 72, 0.18);
+            border-color: var(--crimson-red);
+            color: #FFFFFF;
+            box-shadow: 0 0 12px var(--crimson-glow);
+        }
+
+        .query-sub-tag {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .query-main-panel {
+            background: rgba(14, 10, 8, 0.95);
+            border: 1px solid var(--border-warm);
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            gap: 12px;
+        }
+
+        .query-explain-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(217, 119, 54, 0.1);
+            border: 1px solid var(--border-warm);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            color: var(--text-warm-light);
+        }
+
+        /* -------------------------------------------------------------
+           SLIDE 5: LIVE PROTOTYPE CONSOLE & INTERACTIVE SIMULATOR
+        ------------------------------------------------------------- */
+        .proto-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+            height: 100%;
+        }
+
+        .proto-card {
+            background: rgba(20, 15, 12, 0.88);
+            border: 1px solid var(--border-warm);
+            border-radius: var(--radius-md);
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .proto-form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .proto-form-group label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .proto-input,
+        .proto-select {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-warm);
+            color: #FFFFFF;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.84rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .proto-input:focus,
+        .proto-select:focus {
+            border-color: var(--primary-cognac);
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .proto-action-btn {
+            background: linear-gradient(135deg, var(--crimson-red), var(--primary-cognac));
+            border: none;
+            color: #FFFFFF;
+            font-weight: 700;
+            font-size: 0.84rem;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.25s;
+            box-shadow: 0 4px 15px var(--crimson-glow);
+        }
+
+        .proto-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--crimson-glow);
+        }
+
+        .proto-console-out {
+            background: #080605;
+            border: 1px solid var(--border-warm);
+            border-radius: 8px;
+            padding: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.76rem;
+            color: #6EE7B7;
+            flex: 1;
+            overflow-y: auto;
+            max-height: 230px;
+            line-height: 1.45;
+        }
+
+        /* -------------------------------------------------------------
+           SLIDE 6: SEGMENT CONCURRENCY VISUALIZER
+        ------------------------------------------------------------- */
+        .track-timeline {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            margin: 20px 0 16px 0;
+            padding: 0 20px;
+        }
+
+        .track-timeline::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 20px;
+            right: 20px;
+            height: 4px;
+            background: #451A03;
+            z-index: 1;
+        }
+
+        .track-st-node {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary-cognac);
+            z-index: 2;
+            position: relative;
+            box-shadow: 0 0 10px var(--primary-glow);
+            border: 2px solid #FFFDFB;
+        }
+
+        .track-st-label {
+            position: absolute;
+            top: 22px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.72rem;
+            font-weight: 700;
+            white-space: nowrap;
+            color: var(--text-warm-light);
+        }
+
+        .seg-matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .seg-seat-card {
+            background: rgba(28, 20, 16, 0.7);
+            border: 1px solid var(--border-warm);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        /* Bottom Controls Bar */
+        .bottom-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: rgba(24, 18, 14, 0.88);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-warm);
+            padding: 8px 22px;
+            border-radius: 50px;
+            z-index: 100;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+        }
+
+        .nav-btn {
+            background: rgba(253, 251, 247, 0.08);
+            border: 1px solid rgba(217, 140, 85, 0.3);
+            color: #FFFFFF;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn:hover {
+            background: var(--crimson-red);
+            border-color: var(--crimson-red);
+            transform: scale(1.08);
+            box-shadow: 0 0 15px var(--crimson-glow);
+        }
+
+        .slide-dots {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(253, 251, 247, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dot.active {
+            width: 24px;
+            border-radius: 10px;
+            background: linear-gradient(90deg, var(--crimson-red), var(--primary-cognac));
+            box-shadow: 0 0 10px var(--crimson-glow);
+        }
+
+        .slide-counter {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-warm-light);
+            font-family: 'JetBrains Mono', monospace;
+            padding: 0 6px;
+        }
+
+        /* Presenter Pitch Drawer */
+        .pitch-drawer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(18, 12, 10, 0.98);
+            backdrop-filter: blur(25px);
+            border-top: 1px solid var(--primary-cognac);
+            padding: 20px 40px;
+            transform: translateY(105%);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 200;
+            box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.8);
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .pitch-drawer.open {
+            transform: translateY(0);
+        }
+
+        .pitch-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .pitch-header h4 {
+            font-size: 1rem;
+            color: var(--primary-cognac);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pitch-text {
+            font-size: 0.95rem;
+            color: var(--text-warm-light);
+            line-height: 1.6;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.35s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    
+        /* ---- Project 41 additions ---- */
+        .fd-box.compact { padding: 7px 11px; margin-bottom: 7px; }
+        .fd-box.compact .fd-title { font-size: 0.78rem; margin-bottom: 3px; }
+        .fd-box.compact .fd-math { font-size: 0.7rem; line-height: 1.35; }
+        .grid-3.cons { gap: 12px; }
+        .grid-3.cons .constraint-card { padding: 10px 12px; }
+        .grid-3.cons .constraint-card h3 { font-size: 0.9rem; margin-bottom: 3px; }
+        .grid-3.cons .constraint-card p { font-size: 0.74rem !important; color: var(--text-secondary); }
+        .grid-3.cons .sql-snippet-box { font-size: 0.64rem; line-height: 1.3; padding: 6px 8px; white-space: pre; }
+        .st-badge { display:inline-block; font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:20px; border:1px solid var(--border-warm); white-space:nowrap; }
+        .st-open { color:#FDA4AF; background:rgba(225,29,72,.15); border-color:rgba(225,29,72,.4); }
+        .st-assigned { color:#FCD34D; background:rgba(245,158,11,.14); border-color:rgba(245,158,11,.4); }
+        .st-inprogress { color:#FBD38D; background:rgba(217,119,54,.18); border-color:rgba(217,119,54,.45); }
+        .st-onhold { color:#C4B5FD; background:rgba(139,92,246,.15); border-color:rgba(139,92,246,.4); }
+        .st-resolved { color:#6EE7B7; background:rgba(16,185,129,.14); border-color:rgba(16,185,129,.4); }
+        .st-closed { color:#A7F3D0; background:rgba(16,185,129,.28); border-color:rgba(16,185,129,.6); }
+        .st-cancelled { color:#C7BDB5; background:rgba(140,125,115,.2); border-color:rgba(140,125,115,.45); }
+        .good { color:#10B981; font-weight:700; } .bad { color:#FB7185; font-weight:700; } .warn { color:#F59E0B; font-weight:700; }
+        .num { text-align:right; font-family:'JetBrains Mono',monospace; }
+        .flow-row { display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; margin:6px 0 4px; }
+        .flow-node { cursor:pointer; min-width:104px; text-align:center; padding:10px 8px; border-radius:10px; background:rgba(28,20,16,.8);
+                     border:1px solid var(--border-warm); transition:all .2s; }
+        .flow-node:hover, .flow-node.sel { border-color:var(--primary-cognac); box-shadow:0 0 16px var(--primary-glow); transform:translateY(-2px); }
+        .flow-node .fn-name { font-weight:700; font-size:0.82rem; color:#fff; }
+        .flow-node .fn-count { font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:var(--text-secondary); margin-top:3px; }
+        .flow-arrow { color:var(--primary-cognac); font-size:0.95rem; }
+        table.matrix { border-collapse:collapse; font-size:0.72rem; width:100%; }
+        table.matrix th { padding:5px 4px; font-size:0.62rem; text-transform:uppercase; color:var(--text-muted); font-weight:700; }
+        table.matrix td { text-align:center; padding:5px 4px; border:1px solid rgba(255,255,255,.05); }
+        table.matrix td.rowh { text-align:left; font-weight:700; color:var(--text-warm-light); font-size:0.72rem; white-space:nowrap; }
+        table.matrix td.ok { background:rgba(16,185,129,.2); color:#6EE7B7; font-weight:800; }
+        table.matrix td.no { color:#4b3f38; }
+        table.matrix tr.hl td.rowh { color:var(--primary-cognac); }
+        table.matrix tr.hl td { outline:1px solid rgba(217,119,54,.55); }
+        .proto-form-group.tight { margin-bottom:8px; }
+        .chip-row { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+        .chip { font-size:0.68rem; font-weight:700; padding:4px 9px; border-radius:20px; cursor:pointer; color:#FDA4AF;
+                background:rgba(225,29,72,.12); border:1px solid rgba(225,29,72,.35); }
+        .chip:hover { background:rgba(225,29,72,.28); }
+        .proto-input, .proto-select { width:100%; }
+        .sim-status { margin-top:8px; background:rgba(0,0,0,.3); padding:8px 12px; border-radius:6px; font-size:0.76rem; color:var(--text-secondary); }
+        .out-note { font-size:0.7rem; color:var(--text-muted); margin:2px 0 4px; }
+        .dict-nav { max-height:100%; }
+        .query-main-panel #queryCodeDisplay { flex-shrink:0; }
+        .query-main-panel table.dict-table td { padding:5px 8px; font-size:0.74rem; }
+        .query-main-panel table.dict-table th { padding:6px 8px; font-size:0.62rem; }
+        .query-main-panel table.dict-table td:first-child { white-space:nowrap; }
+        #slide-1 .content-body { justify-content:flex-start; }
+        #slide-1 .fd-box.compact { padding:5px 10px; margin-bottom:5px; }
+        #slide-1 .card h3 { margin-bottom:6px !important; }
+        .dict-tab-btn { padding:6px 10px; font-size:0.78rem; }
+</style>
+</head>
+
+<body>
+
+    <!-- Ambient Warm Orbs -->
+    <div class="bg-glow glow-1"></div>
+    <div class="bg-glow glow-2"></div>
+    <div class="bg-glow glow-3"></div>
+
+    <!-- Top Navigation Header -->
+    <header class="top-nav">
+        <div class="project-badge">
+            <span class="badge-dot"></span>
+            <span>DBMS Review 2 • Project 41 • Integrity, SQL Reports & Prototype</span>
+        </div>
+        <div class="top-actions">
+            <button class="header-btn btn-crimson" onclick="togglePitchDrawer()" title="Speaker Pitch Script">
+                <i class="fa-solid fa-microphone-lines"></i>
+                <span>Speaker Pitch</span>
+            </button>
+            <button class="header-btn" onclick="toggleFullScreen()" title="Toggle Fullscreen">
+                <i class="fa-solid fa-expand"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Slide Deck Container -->
+    <main class="slide-deck">
+
+        
+        <!-- SLIDE 0 -->
+        <section class="slide active title-slide" id="slide-0">
+            <div class="hero-icon-container"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+            <h1>Campus Facility Maintenance<br>Request Management System</h1>
+            <p class="hero-subtitle">Review 2: 3NF Functional Dependencies, Constraint DDL &amp; Triggers, Analytical Queries and Live Database Prototype</p>
+            <div class="hero-pill-group">
+                <div class="hero-pill"><i class="fa-solid fa-calculator"></i> 3NF Functional Dependencies</div>
+                <div class="hero-pill"><i class="fa-solid fa-book-atlas"></i> Data Dictionary (16 tables)</div>
+                <div class="hero-pill"><i class="fa-solid fa-shield-halved"></i> Constraints &amp; Triggers</div>
+                <div class="hero-pill"><i class="fa-solid fa-chart-pie"></i> 7 Analytical Reports &amp; Views</div>
+                <div class="hero-pill"><i class="fa-solid fa-desktop"></i> Interactive Prototype</div>
+            </div>
+            <div class="hero-footer-tip"><i class="fa-regular fa-keyboard"></i>
+                <span>Navigate with <kbd>←</kbd> <kbd>→</kbd> or the bottom dock • Press <kbd>P</kbd> for the Pitch Script</span></div>
+        </section>
+
+        <!-- SLIDE 1 -->
+        <section class="slide" id="slide-1">
+            <div class="slide-header"><div class="slide-title-group">
+                <h2><i class="fa-solid fa-square-root-variable"></i> 1. 3NF Normalization &amp; Functional Dependencies</h2>
+                <p class="slide-subtitle">Every non-prime attribute depends on the key, the whole key and nothing but the key</p></div>
+                <span class="slide-tag tag-amber"><i class="fa-solid fa-check-double"></i> 3NF Verified</span></div>
+            <div class="content-body"><div class="grid-2">
+                <div class="card" style="padding:14px;"><h3 style="font-size:0.95rem;margin-bottom:8px;"><i class="fa-solid fa-building" style="color:var(--crimson-red);"></i> Campus, Asset &amp; Request Core</h3><div class="fd-box compact"><div class="fd-title"><span>BUILDING (BuildingID, BuildingCode, BuildingName, Floors)</span><span class="nf-badge-3">3NF</span></div><div class="fd-math">• FD1: BuildingID → BuildingCode, BuildingName, Floors<br>• Candidate keys: {BuildingID}, {BuildingCode}, {BuildingName}</div></div><div class="fd-box compact"><div class="fd-title"><span>ROOM (RoomID, BuildingID, RoomNo, FloorNo, RoomType)</span><span class="nf-badge-3">3NF</span></div><div class="fd-math">• FD1: RoomID → BuildingID, RoomNo, FloorNo, RoomType<br>• FD2: (BuildingID, RoomNo) → RoomID (alternate key)</div></div><div class="fd-box compact"><div class="fd-title"><span>ASSET (AssetID, RoomID, AssetTag, AssetName, InstalledOn)</span><span class="nf-badge-3">3NF</span></div><div class="fd-math">• FD1: AssetID → RoomID, AssetTag, AssetName, InstalledOn<br>• FD2: AssetTag → AssetID (alternate key)</div></div><div class="fd-box compact"><div class="fd-title"><span>TECHNICIAN (TechID, FullName, Phone, CategoryID, MaxActiveJobs, IsActive)</span><span class="nf-badge-3">3NF</span></div><div class="fd-math">• FD1: TechID → FullName, Phone, CategoryID, MaxActiveJobs, IsActive</div></div><div class="fd-box compact"><div class="fd-title"><span>MAINTENANCE_REQUEST (RequestID, RequestNo, RequesterID, RoomID, …)</span><span class="nf-badge-3">3NF</span></div><div class="fd-math">• FD1: RequestID → RequestNo, RequesterID, RoomID, AssetID, CategoryID, PriorityID, Description, CreatedAt, Status, ClosedAt, ClosureRemarks<br>• FD2: RequestNo → RequestID. Building is NOT stored: RoomID → BuildingID lives in ROOM.</div></div><div class="fd-box compact"><div class="fd-title"><span>STATUS_TRANSITION (FromStatus, ToStatus)</span><span class="nf-badge-3">3NF</span></div><div class="fd-math">• All-key relation: (FromStatus, ToStatus) → ∅. No non-prime attributes, so 3NF holds trivially.</div></div></div>
+                <div class="card" style="padding:14px;"><h3 style="font-size:0.95rem;margin-bottom:8px;"><i class="fa-solid fa-gears" style="color:var(--primary-cognac);"></i> Work, Material, Cost &amp; Feedback</h3><div class="fd-box compact"><div class="fd-title"><span>ASSIGNMENT (AssignmentID, RequestID, TechID, AssignedAt, CompletedAt, Status)</span><span class="nf-badge-3">3NF</span></div><div class="fd-math">• FD1: AssignmentID → RequestID, TechID, AssignedAt, CompletedAt, Status<br>• Reassignment keeps history as extra rows, not repeating groups.</div></div><div class="fd-box compact"><div class="fd-title"><span>WORK_LOG (LogID, AssignmentID, LogTime, WorkNotes, HoursSpent)</span><span class="nf-badge-3">3NF</span></div><div class="fd-math">• FD1: LogID → AssignmentID, LogTime, WorkNotes, HoursSpent</div></div><div class="fd-box compact"><div class="fd-title"><span>MATERIAL (MaterialID, MaterialName, Unit, UnitCost, StockQty, ReorderLevel)</span><span class="nf-badge-3">3NF</span></div><div class="fd-math">• FD1: MaterialID → MaterialName, Unit, UnitCost, StockQty, ReorderLevel<br>• FD2: MaterialName → MaterialID (alternate key)</div></div><div class="fd-box compact"><div class="fd-title"><span>MATERIAL_USAGE (UsageID, LogID, MaterialID, Quantity, UnitCost)</span><span class="nf-badge-3">3NF</span></div><div class="fd-math">• FD1: UsageID → LogID, MaterialID, Quantity, UnitCost<br>• UnitCost is a price snapshot at time of use, not determined by MaterialID alone, so no transitive dependency.</div></div><div class="fd-box compact"><div class="fd-title"><span>REQUEST_COST (CostID, RequestID, CostType, Amount, Remarks)</span><span class="nf-badge-3">3NF</span></div><div class="fd-math">• FD1: CostID → RequestID, CostType, Amount, Remarks<br>• Material cost is derived by query, never stored twice.</div></div><div class="fd-box compact"><div class="fd-title"><span>FEEDBACK (FeedbackID, RequestID, Rating, Comments, SubmittedAt)</span><span class="nf-badge-3">3NF</span></div><div class="fd-math">• FD1: FeedbackID → RequestID, Rating, Comments, SubmittedAt<br>• FD2: RequestID → FeedbackID (one feedback per request)</div></div></div>
+            </div>
+            <div style="font-size:0.74rem;color:var(--text-muted);margin-top:8px;">Remaining relations (Campus_User, Category, Priority, Status_History) are single-key tables with the same pattern: PK → all other attributes.</div></div>
+        </section>
+
+        <!-- SLIDE 2 -->
+        <section class="slide" id="slide-2">
+            <div class="slide-header"><div class="slide-title-group">
+                <h2><i class="fa-solid fa-book-bookmark"></i> 2. Concise Interactive Data Dictionary</h2>
+                <p class="slide-subtitle">Data types, nullability, keys and the constraint attached to each column</p></div>
+                <span class="slide-tag"><i class="fa-solid fa-table-list"></i> 16 Table Dictionaries</span></div>
+            <div class="content-body"><div class="dict-container">
+                <div class="dict-nav" id="dictNav"><button class="dict-tab-btn active" onclick="showDictTable('Building')"><span><i class="fa-solid fa-building"></i> Building</span><span class="type-pill">4 cols</span></button><button class="dict-tab-btn" onclick="showDictTable('Room')"><span><i class="fa-solid fa-door-open"></i> Room</span><span class="type-pill">5 cols</span></button><button class="dict-tab-btn" onclick="showDictTable('Asset')"><span><i class="fa-solid fa-toolbox"></i> Asset</span><span class="type-pill">5 cols</span></button><button class="dict-tab-btn" onclick="showDictTable('Campus_User')"><span><i class="fa-solid fa-users"></i> Campus_User</span><span class="type-pill">5 cols</span></button><button class="dict-tab-btn" onclick="showDictTable('Category')"><span><i class="fa-solid fa-tags"></i> Category</span><span class="type-pill">2 cols</span></button><button class="dict-tab-btn" onclick="showDictTable('Priority')"><span><i class="fa-solid fa-flag"></i> Priority</span><span class="type-pill">3 cols</span></button><button class="dict-tab-btn" onclick="showDictTable('Technician')"><span><i class="fa-solid fa-helmet-safety"></i> Technician</span><span class="type-pill">6 cols</span></button><button class="dict-tab-btn" onclick="showDictTable('Status_Transition')"><span><i class="fa-solid fa-diagram-project"></i> Status_Transition</span><span class="type-pill">2 cols</span></button><button class="dict-tab-btn" onclick="showDictTable('Maintenance_Request')"><span><i class="fa-solid fa-screwdriver-wrench"></i> Maintenance_Request</span><span class="type-pill">12 cols</span></button><button class="dict-tab-btn" onclick="showDictTable('Assignment')"><span><i class="fa-solid fa-user-check"></i> Assignment</span><span class="type-pill">6 cols</span></button><button class="dict-tab-btn" onclick="showDictTable('Work_Log')"><span><i class="fa-solid fa-clipboard-list"></i> Work_Log</span><span class="type-pill">5 cols</span></button><button class="dict-tab-btn" onclick="showDictTable('Material')"><span><i class="fa-solid fa-boxes-stacked"></i> Material</span><span class="type-pill">6 cols</span></button><button class="dict-tab-btn" onclick="showDictTable('Material_Usage')"><span><i class="fa-solid fa-screwdriver"></i> Material_Usage</span><span class="type-pill">5 cols</span></button><button class="dict-tab-btn" onclick="showDictTable('Request_Cost')"><span><i class="fa-solid fa-indian-rupee-sign"></i> Request_Cost</span><span class="type-pill">5 cols</span></button><button class="dict-tab-btn" onclick="showDictTable('Status_History')"><span><i class="fa-solid fa-clock-rotate-left"></i> Status_History</span><span class="type-pill">6 cols</span></button><button class="dict-tab-btn" onclick="showDictTable('Feedback')"><span><i class="fa-solid fa-star"></i> Feedback</span><span class="type-pill">5 cols</span></button></div>
+                <div class="dict-display-card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-warm);padding-bottom:8px;">
+                        <h3 id="dictTableName" style="color:var(--primary-cognac);"></h3>
+                        <span id="dictTableDesc" style="font-size:0.8rem;color:var(--text-secondary);text-align:right;max-width:60%;"></span></div>
+                    <div id="dictTableContent" style="flex:1;overflow-y:auto;"></div></div>
+            </div></div>
+        </section>
+
+        <!-- SLIDE 3 -->
+        <section class="slide" id="slide-3">
+            <div class="slide-header"><div class="slide-title-group">
+                <h2><i class="fa-solid fa-shield-check"></i> 3. DDL Scripts, Integrity Constraints &amp; Triggers</h2>
+                <p class="slide-subtitle">Five required business rules plus cross-table integrity, enforced by the database itself</p></div>
+                <span class="slide-tag tag-amber"><i class="fa-solid fa-lock"></i> Business Integrity</span></div>
+            <div class="content-body"><div class="grid-3 cons"><div class="constraint-card"><div><span class="constraint-badge cb-red"><i class="fa-solid fa-fingerprint"></i> Rule 1</span><h3>Unique Request Numbers</h3><p>One business number per request, in a fixed format.</p></div><div class="sql-snippet-box">RequestNo <span class="sql-fn">VARCHAR</span>(<span class="sql-num">13</span>) <span class="sql-kw">NOT NULL</span> <span class="sql-kw">UNIQUE</span>,
+CONSTRAINT chk_req_no_format
+  <span class="sql-kw">CHECK</span> (RequestNo <span class="sql-kw">LIKE</span> <span class="sql-str">'REQ-____-____'</span>)</div></div><div class="constraint-card"><div><span class="constraint-badge cb-cognac"><i class="fa-solid fa-lock"></i> Rule 2</span><h3>Closure Details Required</h3><p>A request cannot be Closed without remarks and a closing time.</p></div><div class="sql-snippet-box">CONSTRAINT chk_closure_details <span class="sql-kw">CHECK</span>
+ (Status &lt;&gt; <span class="sql-str">'Closed'</span> <span class="sql-kw">OR</span> (ClosedAt IS <span class="sql-kw">NOT NULL</span>
+  <span class="sql-kw">AND</span> ClosureRemarks IS <span class="sql-kw">NOT NULL</span>
+  <span class="sql-kw">AND</span> <span class="sql-fn">CHAR_LENGTH</span>(<span class="sql-fn">TRIM</span>(ClosureRemarks)) &gt; <span class="sql-num">0</span>))</div></div><div class="constraint-card"><div><span class="constraint-badge cb-emerald"><i class="fa-solid fa-indian-rupee-sign"></i> Rule 3</span><h3>Non-Negative Materials & Costs</h3><p>Amounts, prices and stock can never go below zero.</p></div><div class="sql-snippet-box">Amount <span class="sql-fn">DECIMAL</span>(<span class="sql-num">10</span>,<span class="sql-num">2</span>) <span class="sql-kw">CHECK</span> (Amount &gt;= <span class="sql-num">0</span>),
+Quantity <span class="sql-fn">INT</span> <span class="sql-kw">CHECK</span> (Quantity &gt; <span class="sql-num">0</span>),
+StockQty <span class="sql-fn">INT</span> <span class="sql-kw">CHECK</span> (StockQty &gt;= <span class="sql-num">0</span>)
+<span style="color:#8C7D73;">-- trg_usage_bi: Quantity &gt; stock -&gt; SIGNAL</span></div></div><div class="constraint-card"><div><span class="constraint-badge cb-red"><i class="fa-solid fa-arrows-split-up-and-left"></i> Rule 4</span><h3>Valid Status Transitions</h3><p>Moves are checked against the Status_Transition table.</p></div><div class="sql-snippet-box"><span class="sql-kw">SELECT</span> <span class="sql-fn">COUNT</span>(*) <span class="sql-kw">INTO</span> ok_move
+ <span class="sql-kw">FROM</span> Status_Transition
+ <span class="sql-kw">WHERE</span> FromStatus = OLD.Status
+   <span class="sql-kw">AND</span> ToStatus = NEW.Status;
+<span class="sql-kw">IF</span> ok_move = <span class="sql-num">0</span> <span class="sql-kw">THEN</span> <span class="sql-kw">SIGNAL SQLSTATE</span> <span class="sql-str">'45000'</span>
+ <span class="sql-kw">SET MESSAGE_TEXT</span> = <span class="sql-str">'Invalid Status Transition'</span>;</div></div><div class="constraint-card"><div><span class="constraint-badge cb-cognac"><i class="fa-solid fa-user-gear"></i> Rule 5</span><h3>Assignment Control</h3><p>Technician must be active, under load limit; one active job per request.</p></div><div class="sql-snippet-box"><span class="sql-kw">IF</span> tech_active = <span class="sql-num">0</span> <span class="sql-kw">THEN</span> SIGNAL ...;
+<span class="sql-kw">IF</span> tech_load &gt;= tech_max <span class="sql-kw">THEN</span> SIGNAL ...;
+<span class="sql-kw">IF</span> req_active &gt; <span class="sql-num">0</span> <span class="sql-kw">THEN</span> SIGNAL ...;
+<span style="color:#8C7D73;">-- trg_req_bu: In Progress needs an</span>
+<span style="color:#8C7D73;">-- Active assignment</span></div></div><div class="constraint-card"><div><span class="constraint-badge cb-emerald"><i class="fa-solid fa-link"></i> Rule 6</span><h3>Cross-Table Integrity</h3><p>Asset must sit in the request room; feedback only after closure.</p></div><div class="sql-snippet-box"><span style="color:#8C7D73;">-- trg_req_bi</span>
+<span class="sql-kw">IF</span> asset_room &lt;&gt; NEW.RoomID <span class="sql-kw">THEN</span> SIGNAL ...;
+<span style="color:#8C7D73;">-- trg_feedback_bi</span>
+<span class="sql-kw">IF</span> req_status &lt;&gt; <span class="sql-str">'Closed'</span> <span class="sql-kw">THEN</span> SIGNAL ...;</div></div></div>
+            <div style="font-size:0.74rem;color:var(--text-muted);margin-top:8px;">9 triggers in total: trg_req_bi, trg_req_ai, trg_req_bu, trg_req_au, trg_asg_bi, trg_asg_ai, trg_usage_bi, trg_usage_ai, trg_feedback_bi (see review2_schema_ddl.sql).</div></div>
+        </section>
+
+        <!-- SLIDE 4 -->
+        <section class="slide" id="slide-4">
+            <div class="slide-header"><div class="slide-title-group">
+                <h2><i class="fa-solid fa-database"></i> 4. Analytical SQL Reports &amp; Views</h2>
+                <p class="slide-subtitle">Joins, subqueries, aggregation and views, with output from the loaded sample data (21 requests)</p></div>
+                <span class="slide-tag"><i class="fa-solid fa-code"></i> SQL Engine</span></div>
+            <div class="content-body"><div class="query-runner-layout">
+                <div class="query-list-nav" id="queryNav"><button class="query-tab-btn active" onclick="showQuery(1)"><span><i class="fa-solid fa-hourglass-half"></i> 1. Pending Requests</span><span class="query-sub-tag">View + Joins + CASE</span></button><button class="query-tab-btn" onclick="showQuery(2)"><span><i class="fa-solid fa-calendar-days"></i> 2. Request Ageing</span><span class="query-sub-tag">Derived Table + GROUP BY</span></button><button class="query-tab-btn" onclick="showQuery(3)"><span><i class="fa-solid fa-stopwatch"></i> 3. Response Time</span><span class="query-sub-tag">Subquery + Conditional Agg</span></button><button class="query-tab-btn" onclick="showQuery(4)"><span><i class="fa-solid fa-people-group"></i> 4. Technician Load</span><span class="query-sub-tag">View + Aggregated LEFT JOINs</span></button><button class="query-tab-btn" onclick="showQuery(5)"><span><i class="fa-solid fa-building"></i> 5. Building Cost</span><span class="query-sub-tag">View + Correlated Subqueries</span></button><button class="query-tab-btn" onclick="showQuery(6)"><span><i class="fa-solid fa-boxes-stacked"></i> 6. Material Use</span><span class="query-sub-tag">RANK() Window Function</span></button><button class="query-tab-btn" onclick="showQuery(7)"><span><i class="fa-solid fa-star"></i> 7. Feedback</span><span class="query-sub-tag">View + Correlated Subquery</span></button></div>
+                <div class="query-main-panel">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+                        <h3 id="queryTitle" style="color:var(--primary-cognac);"></h3><span id="queryTechnique" class="type-pill"></span></div>
+                    <div class="query-explain-badge"><i class="fa-solid fa-circle-info" style="color:var(--crimson-red);"></i><span id="queryDescription"></span></div>
+                    <div class="sql-snippet-box" id="queryCodeDisplay" style="max-height:190px;min-height:120px;overflow:auto;white-space:pre;"></div>
+                    <div><div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px;">Live Output:</div><div id="queryOutputTable"></div></div>
+                </div></div></div>
+        </section>
+
+        <!-- SLIDE 5 -->
+        <section class="slide" id="slide-5">
+            <div class="slide-header"><div class="slide-title-group">
+                <h2><i class="fa-solid fa-laptop-code"></i> 5. Live Database Prototype Demonstration</h2>
+                <p class="slide-subtitle">Pick a request and an action: valid moves update the data, rule violations get the trigger's own error</p></div>
+                <span class="slide-tag tag-amber"><i class="fa-solid fa-play"></i> Interactive Demo</span></div>
+            <div class="content-body"><div class="proto-container">
+                <div class="proto-card" style="justify-content:flex-start;">
+                    <h3 style="color:var(--crimson-red);margin-bottom:10px;"><i class="fa-solid fa-screwdriver-wrench"></i> Request Workflow Simulator</h3>
+                    <div class="proto-form-group tight"><label>Request</label><select id="simReq" class="proto-select" onchange="refreshSim()"></select></div>
+                    <div class="proto-form-group tight"><label>Action</label>
+                        <select id="simAction" class="proto-select" onchange="renderFields()">
+                            <option value="assign">Assign technician</option><option value="release">Release technician (reassign)</option>
+                            <option value="status">Change status / close / cancel</option><option value="worklog">Add work log</option>
+                            <option value="material">Add material used</option><option value="cost">Add cost</option><option value="feedback">Submit feedback</option></select></div>
+                    <div id="simFields"></div>
+                    <div style="display:flex;gap:10px;margin-top:6px;"><button class="proto-action-btn" style="flex:1;" onclick="runAction()"><i class="fa-solid fa-circle-check"></i> Execute</button>
+                        <button class="proto-action-btn" style="background:#4a3a30;" onclick="resetSim()"><i class="fa-solid fa-rotate-left"></i> Reset</button></div>
+                    <div class="chip-row"><span style="font-size:0.68rem;color:var(--text-muted);align-self:center;">Try a violation:</span>
+                        <span class="chip" onclick="preset('close')">Close w/o remarks</span><span class="chip" onclick="preset('skip')">Open → Resolved</span>
+                        <span class="chip" onclick="preset('leave')">Inactive technician</span><span class="chip" onclick="preset('full')">Technician at limit</span>
+                        <span class="chip" onclick="preset('stock')">Over-stock material</span></div>
+                    <div class="sim-status" id="simStatus"></div>
+                </div>
+                <div class="proto-card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                        <h3 style="color:var(--emerald-green);"><i class="fa-solid fa-terminal"></i> Database Engine Transaction Log</h3>
+                        <button class="dict-tab-btn" style="padding:4px 8px;font-size:0.72rem;" onclick="clearConsole()">Clear Log</button></div>
+                    <div class="proto-console-out" id="protoConsole" style="max-height:none;min-height:300px;">
+[SYSTEM INIT] Campus Maintenance DBMS prototype loaded (21 requests, 7 technicians).
+[INTEGRITY] CHECK constraints ACTIVE: costs/quantities/stock >= 0, rating 1-5, closure details.
+[TRIGGERS] trg_req_bu, trg_asg_bi, trg_asg_ai, trg_usage_bi, trg_feedback_bi armed.
+[READY] Select a request and an action, then press Execute.
+                    </div></div>
+            </div></div>
+        </section>
+
+        <!-- SLIDE 6 -->
+        <section class="slide" id="slide-6">
+            <div class="slide-header"><div class="slide-title-group">
+                <h2><i class="fa-solid fa-diagram-project"></i> 6. Status State Machine &amp; Transition Rules</h2>
+                <p class="slide-subtitle">Legal moves live in the Status_Transition table, so the rule is data, not hard-coded logic</p></div>
+                <span class="slide-tag tag-amber"><i class="fa-solid fa-network-wired"></i> Workflow Integrity</span></div>
+            <div class="content-body"><div class="grid-2" style="grid-template-columns:1.05fr 1fr;">
+                <div class="card" style="padding:18px;">
+                    <h3 style="margin-bottom:6px;"><i class="fa-solid fa-route" style="color:var(--crimson-red);"></i> Request Lifecycle <span style="font-size:0.72rem;color:var(--text-muted);font-weight:500;">(click a status; counts are from the sample data)</span></h3>
+                    <div class="flow-row"><div class="flow-node" onclick="selectState('Open')" id="fn-Open"><div class="fn-name">Open</div><div class="fn-count">3 now</div></div><i class="fa-solid fa-arrow-right flow-arrow"></i><div class="flow-node" onclick="selectState('Assigned')" id="fn-Assigned"><div class="fn-name">Assigned</div><div class="fn-count">2 now</div></div><i class="fa-solid fa-arrow-right flow-arrow"></i><div class="flow-node" onclick="selectState('In Progress')" id="fn-InProgress"><div class="fn-name">In Progress</div><div class="fn-count">3 now</div></div><i class="fa-solid fa-arrow-right flow-arrow"></i><div class="flow-node" onclick="selectState('Resolved')" id="fn-Resolved"><div class="fn-name">Resolved</div><div class="fn-count">1 now</div></div><i class="fa-solid fa-arrow-right flow-arrow"></i><div class="flow-node" onclick="selectState('Closed')" id="fn-Closed"><div class="fn-name">Closed</div><div class="fn-count">10 now</div></div></div>
+                    <div class="flow-row" style="margin-top:10px;"><div class="flow-node" onclick="selectState('On Hold')" id="fn-OnHold"><div class="fn-name">On Hold</div><div class="fn-count">1 now</div></div><div class="flow-node" onclick="selectState('Cancelled')" id="fn-Cancelled"><div class="fn-name">Cancelled</div><div class="fn-count">1 now</div></div></div>
+                    <div id="stateInfo" style="margin-top:14px;background:rgba(0,0,0,.35);padding:12px;border-radius:8px;font-size:0.82rem;color:var(--text-warm-light);"></div>
+                    <div style="margin-top:12px;font-size:0.76rem;color:var(--text-secondary);line-height:1.5;">
+                        <strong style="color:var(--secondary-amber);">Extra guards in trg_req_bu:</strong> In Progress needs an Active assignment • Resolved needs at least one work log • Closed needs remarks (ClosedAt auto-filled) • every change is written to Status_History by trg_req_au.</div>
+                </div>
+                <div class="card" style="padding:18px;">
+                    <h3 style="margin-bottom:8px;"><i class="fa-solid fa-table-cells" style="color:var(--primary-cognac);"></i> Transition Matrix (From ↓ To →)</h3>
+                    <div id="matrixHost"></div>
+                    <div style="margin-top:8px;font-size:0.72rem;color:var(--text-muted);">12 legal transitions out of 49 possible. Closed and Cancelled are terminal; a Resolved request can be reopened.</div>
+                </div></div></div>
+        </section>
+
+        <!-- SLIDE 7 -->
+        <section class="slide" id="slide-7">
+            <div class="slide-header"><div class="slide-title-group">
+                <h2><i class="fa-solid fa-flag-checkered"></i> 7. Review 2 Summary &amp; Review 3 Roadmap</h2>
+                <p class="slide-subtitle">From SQL integrity and reporting to the Python application with transactional stored procedures</p></div>
+                <span class="slide-tag tag-amber"><i class="fa-solid fa-award"></i> Review 2 Complete</span></div>
+            <div class="content-body"><div class="grid-3">
+                <div class="card"><div style="color:var(--emerald-green);font-size:1.8rem;margin-bottom:10px;"><i class="fa-solid fa-circle-check"></i></div><h3>Review 2 Delivered</h3>
+                    <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;font-size:0.82rem;color:var(--text-secondary);margin-top:8px;">
+                    <li>✔ 3NF proof &amp; functional dependencies</li><li>✔ Data dictionary (16 tables)</li><li>✔ DDL with constraints &amp; 9 triggers</li>
+                    <li>✔ Sample data: 21 requests, 18 assignments</li><li>✔ 7 reports, 4 views, subqueries &amp; window function</li><li>✔ Interactive prototype &amp; 9 negative tests</li></ul></div>
+                <div class="card"><div style="color:var(--primary-cognac);font-size:1.8rem;margin-bottom:10px;"><i class="fa-solid fa-gears"></i></div><h3>Technical Highlights</h3>
+                    <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;font-size:0.82rem;color:var(--text-secondary);margin-top:8px;">
+                    <li>• Data-driven status state machine</li><li>• Automatic Status_History audit trail</li><li>• Technician load limit &amp; leave control</li>
+                    <li>• Stock never negative, price snapshots</li><li>• Derived building &amp; material cost (no redundancy)</li></ul></div>
+                <div class="card"><div style="color:var(--crimson-red);font-size:1.8rem;margin-bottom:10px;"><i class="fa-solid fa-rocket"></i></div><h3>Review 3 Roadmap</h3>
+                    <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;font-size:0.82rem;color:var(--text-secondary);margin-top:8px;">
+                    <li>➤ Python app: log, prioritise, assign, close</li><li>➤ Stored procedures with transactions</li><li>➤ Search, validation &amp; error handling</li>
+                    <li>➤ Index tuning &amp; reports screen</li><li>➤ Systematic test cases &amp; viva report</li></ul></div>
+            </div></div>
+        </section>
+
+    </main>
+
+    <!-- Bottom Dock Navigation Bar -->
+    <footer class="bottom-bar">
+        <button class="nav-btn" onclick="prevSlide()" title="Previous Slide (←)"><i class="fa-solid fa-chevron-left"></i></button>
+        <div class="slide-dots" id="slideDots"></div>
+        <span class="slide-counter" id="slideCounter">1 / 8</span>
+        <button class="nav-btn" onclick="nextSlide()" title="Next Slide (→)"><i class="fa-solid fa-chevron-right"></i></button>
+    </footer>
+
+    <!-- Presenter Pitch Notes Drawer -->
+    <aside class="pitch-drawer" id="pitchDrawer">
+        <div class="pitch-header">
+            <h4><i class="fa-solid fa-microphone"></i> Speaker Pitch Script — <span id="pitchSlideTitle">Slide 1</span></h4>
+            <button class="header-btn" onclick="togglePitchDrawer()" style="padding:4px 12px; font-size:0.75rem;">Close (P)</button>
+        </div>
+        <p class="pitch-text" id="pitchContent"></p>
+    </aside>
+
+    <!-- Interactive Data Scripts & State Handlers -->
+    <script>
+        const pitchScripts = ["Good morning everyone. This is Review 2 of our Database Management System for the Campus Facility Maintenance Request Management System. Facility offices still track classroom, electrical, plumbing and furniture complaints in manual registers, so assignment and service tracking are weak. In this review we present the 3NF design, data dictionary, integrity constraints and triggers, seven analytical reports, and a working prototype.", "Slide 1 is the normalization proof. We have 16 relations and in each one every non-key attribute depends on the key, the whole key and nothing but the key. Two design choices matter: the building of a request is not stored, it is derived through Room, and material cost is never stored on the request, it is derived from material usage. Material usage keeps a price snapshot because the price at the time of use is a historical fact, not a function of the material alone.", "Slide 2 is the concise data dictionary. Pick any table on the left to see its columns, data types, keys, nullability and the constraint attached to each column. It covers all 16 tables from Building and Room through to Assignment, Work Log, Material Usage, Status History and Feedback.", "Slide 3 shows how the required business rules are enforced inside the database, not just in the application. Unique request numbers use a UNIQUE key plus a format check. Closure details are enforced by a CHECK and by a trigger. Costs, quantities and stock use CHECK constraints. Status transitions are validated against a Status Transition table. Assignment control blocks inactive technicians, technicians at their load limit, and double assignment.", "Slide 4 has the seven mandatory reports, each with joins, subqueries, aggregation or views, and the output you see is the real output from the sample data at our reporting time of twelfth October at nine in the morning. Pending requests, ageing, response time against priority target, technician load, building-wise cost, material use with reorder alerts, and feedback.", "Slide 5 is the live prototype. It mirrors the triggers: choose a request and an action. Try closing a resolved request without remarks, skipping from Open to Resolved, assigning the technician who is on leave, or assigning a technician who is already at the maximum. Each is rejected with the same message the database trigger raises, and valid actions update status, load and stock.", "Slide 6 explains the status state machine. The legal moves are stored as data in the Status Transition table, so the rule can change without changing code. Click any status to see where a request can go next. Closed and Cancelled are terminal, and a resolved request can be reopened.", "To conclude, Review 2 delivers the 3NF design, data dictionary, DDL with constraints and triggers, seven reports with views, and the prototype. For Review 3 we will build the Python application on top of this database, with stored procedures for assign, close and cancel, and complete input validation, testing and reports."];
+        const dataDictionary = {"Building": {"desc": "Master list of campus buildings.", "icon": "fa-building", "cols": [["BuildingID", "INT AUTO_INCREMENT", "PK", "NOT NULL", "Unique building identifier."], ["BuildingCode", "VARCHAR(10)", "UNIQUE", "NOT NULL", "Short code, e.g. MAB, SRB."], ["BuildingName", "VARCHAR(100)", "UNIQUE", "NOT NULL", "Full building name."], ["Floors", "INT", "-", "NOT NULL", "CHECK (Floors > 0)."]]}, "Room": {"desc": "Rooms inside a building; the building of any request is derived from here.", "icon": "fa-door-open", "cols": [["RoomID", "INT AUTO_INCREMENT", "PK", "NOT NULL", "Unique room identifier."], ["BuildingID", "INT", "FK", "NOT NULL", "References Building(BuildingID)."], ["RoomNo", "VARCHAR(20)", "-", "NOT NULL", "Room label. UNIQUE (BuildingID, RoomNo)."], ["FloorNo", "INT", "-", "NOT NULL", "CHECK (FloorNo >= 0); 0 = ground floor."], ["RoomType", "VARCHAR(40)", "-", "NOT NULL", "Classroom, Laboratory, Washroom, Hostel Room, etc."]]}, "Asset": {"desc": "Equipment or fixtures that can be the subject of a complaint.", "icon": "fa-toolbox", "cols": [["AssetID", "INT AUTO_INCREMENT", "PK", "NOT NULL", "Unique asset identifier."], ["RoomID", "INT", "FK", "NOT NULL", "References Room(RoomID): where the asset is installed."], ["AssetTag", "VARCHAR(20)", "UNIQUE", "NOT NULL", "Inventory tag, e.g. AST-0003."], ["AssetName", "VARCHAR(80)", "-", "NOT NULL", "Ceiling Fan, Split AC 1.5T, Smart Board, etc."], ["InstalledOn", "DATE", "-", "NULL", "Installation date."]]}, "Campus_User": {"desc": "Requesters (students, faculty, staff) and facility-office admins.", "icon": "fa-users", "cols": [["UserID", "INT AUTO_INCREMENT", "PK", "NOT NULL", "Unique user identifier."], ["FullName", "VARCHAR(100)", "-", "NOT NULL", "Display name."], ["Email", "VARCHAR(120)", "UNIQUE", "NOT NULL", "Login / contact e-mail."], ["Phone", "VARCHAR(15)", "-", "NULL", "Contact number."], ["Role", "VARCHAR(20)", "-", "NOT NULL", "CHECK (Role IN ('Student','Faculty','Staff','Admin'))."]]}, "Category": {"desc": "Complaint categories; also the speciality of a technician.", "icon": "fa-tags", "cols": [["CategoryID", "INT AUTO_INCREMENT", "PK", "NOT NULL", "Unique category identifier."], ["CategoryName", "VARCHAR(50)", "UNIQUE", "NOT NULL", "Classroom & AV, Electrical, Plumbing, Furniture, HVAC."]]}, "Priority": {"desc": "Priority levels with a response-time target (SLA).", "icon": "fa-flag", "cols": [["PriorityID", "INT AUTO_INCREMENT", "PK", "NOT NULL", "Unique priority identifier (1 = most urgent)."], ["PriorityName", "VARCHAR(20)", "UNIQUE", "NOT NULL", "Critical, High, Medium, Low."], ["TargetHours", "INT", "-", "NOT NULL", "CHECK (TargetHours > 0); hours allowed before first assignment."]]}, "Technician": {"desc": "Maintenance staff who carry out the work.", "icon": "fa-helmet-safety", "cols": [["TechID", "INT AUTO_INCREMENT", "PK", "NOT NULL", "Unique technician identifier."], ["FullName", "VARCHAR(100)", "-", "NOT NULL", "Technician name."], ["Phone", "VARCHAR(15)", "-", "NULL", "Contact number."], ["CategoryID", "INT", "FK", "NOT NULL", "References Category(CategoryID): speciality."], ["MaxActiveJobs", "INT", "-", "NOT NULL", "DEFAULT 3, CHECK (> 0); read by the assignment-control trigger."], ["IsActive", "TINYINT(1)", "-", "NOT NULL", "DEFAULT 1; 0 = on leave, cannot be assigned."]]}, "Status_Transition": {"desc": "Data-driven state machine: the only legal status moves.", "icon": "fa-diagram-project", "cols": [["FromStatus", "VARCHAR(20)", "PK", "NOT NULL", "Current status (part of composite PK)."], ["ToStatus", "VARCHAR(20)", "PK", "NOT NULL", "Allowed next status (part of composite PK)."]]}, "Maintenance_Request": {"desc": "Core complaint record raised by a campus user.", "icon": "fa-screwdriver-wrench", "cols": [["RequestID", "INT AUTO_INCREMENT", "PK", "NOT NULL", "Unique request identifier."], ["RequestNo", "VARCHAR(13)", "UNIQUE", "NOT NULL", "Business number REQ-YYYY-NNNN; CHECK LIKE 'REQ-____-____'."], ["RequesterID", "INT", "FK", "NOT NULL", "References Campus_User(UserID)."], ["RoomID", "INT", "FK", "NOT NULL", "References Room(RoomID)."], ["AssetID", "INT", "FK", "NULL", "References Asset(AssetID); must be in the same room (trigger)."], ["CategoryID", "INT", "FK", "NOT NULL", "References Category(CategoryID)."], ["PriorityID", "INT", "FK", "NOT NULL", "References Priority(PriorityID)."], ["Description", "VARCHAR(255)", "-", "NOT NULL", "Complaint text."], ["CreatedAt", "DATETIME", "-", "NOT NULL", "When the request was logged."], ["Status", "VARCHAR(20)", "-", "NOT NULL", "DEFAULT 'Open'; CHECK in 7 allowed values; moves validated by trigger."], ["ClosedAt", "DATETIME", "-", "NULL", "Set only when Closed; CHECK ClosedAt >= CreatedAt."], ["ClosureRemarks", "VARCHAR(255)", "-", "NULL", "Mandatory when Closed; also holds the cancellation reason."]]}, "Assignment": {"desc": "A technician allocated to a request (history kept on reassignment).", "icon": "fa-user-check", "cols": [["AssignmentID", "INT AUTO_INCREMENT", "PK", "NOT NULL", "Unique assignment identifier."], ["RequestID", "INT", "FK", "NOT NULL", "References Maintenance_Request(RequestID)."], ["TechID", "INT", "FK", "NOT NULL", "References Technician(TechID)."], ["AssignedAt", "DATETIME", "-", "NOT NULL", "When the technician was assigned."], ["CompletedAt", "DATETIME", "-", "NULL", "NULL while Active; CHECK >= AssignedAt."], ["Status", "VARCHAR(12)", "-", "NOT NULL", "DEFAULT 'Active'; CHECK IN ('Active','Completed','Reassigned')."]]}, "Work_Log": {"desc": "Time-stamped work entries made by the technician on an assignment.", "icon": "fa-clipboard-list", "cols": [["LogID", "INT AUTO_INCREMENT", "PK", "NOT NULL", "Unique log identifier."], ["AssignmentID", "INT", "FK", "NOT NULL", "References Assignment(AssignmentID)."], ["LogTime", "DATETIME", "-", "NOT NULL", "When the work was recorded."], ["WorkNotes", "VARCHAR(255)", "-", "NOT NULL", "What was done."], ["HoursSpent", "DECIMAL(4,2)", "-", "NOT NULL", "CHECK (HoursSpent BETWEEN 0 AND 24)."]]}, "Material": {"desc": "Spare-part and consumable catalogue with live stock.", "icon": "fa-boxes-stacked", "cols": [["MaterialID", "INT AUTO_INCREMENT", "PK", "NOT NULL", "Unique material identifier."], ["MaterialName", "VARCHAR(80)", "UNIQUE", "NOT NULL", "Item name."], ["Unit", "VARCHAR(15)", "-", "NOT NULL", "pcs, metre, kg, set, roll."], ["UnitCost", "DECIMAL(10,2)", "-", "NOT NULL", "CHECK (UnitCost >= 0); current price."], ["StockQty", "INT", "-", "NOT NULL", "CHECK (StockQty >= 0); never negative."], ["ReorderLevel", "INT", "-", "NOT NULL", "DEFAULT 0; stock at/below this triggers a reorder alert."]]}, "Material_Usage": {"desc": "Materials consumed during a work-log entry.", "icon": "fa-screwdriver", "cols": [["UsageID", "INT AUTO_INCREMENT", "PK", "NOT NULL", "Unique usage identifier."], ["LogID", "INT", "FK", "NOT NULL", "References Work_Log(LogID)."], ["MaterialID", "INT", "FK", "NOT NULL", "References Material(MaterialID)."], ["Quantity", "INT", "-", "NOT NULL", "CHECK (Quantity > 0); trigger rejects quantity above stock."], ["UnitCost", "DECIMAL(10,2)", "-", "NOT NULL", "CHECK (UnitCost >= 0); price snapshot at time of use."]]}, "Request_Cost": {"desc": "Labour, vendor and other charges. Material cost is derived, not stored here.", "icon": "fa-indian-rupee-sign", "cols": [["CostID", "INT AUTO_INCREMENT", "PK", "NOT NULL", "Unique cost identifier."], ["RequestID", "INT", "FK", "NOT NULL", "References Maintenance_Request(RequestID)."], ["CostType", "VARCHAR(10)", "-", "NOT NULL", "CHECK IN ('Labour','Vendor','Other')."], ["Amount", "DECIMAL(10,2)", "-", "NOT NULL", "CHECK (Amount >= 0)."], ["Remarks", "VARCHAR(120)", "-", "NULL", "Short note."]]}, "Status_History": {"desc": "Audit trail of every status change; written only by triggers.", "icon": "fa-clock-rotate-left", "cols": [["HistoryID", "INT AUTO_INCREMENT", "PK", "NOT NULL", "Unique history row."], ["RequestID", "INT", "FK", "NOT NULL", "References Maintenance_Request(RequestID)."], ["OldStatus", "VARCHAR(20)", "-", "NULL", "NULL for the first (creation) entry."], ["NewStatus", "VARCHAR(20)", "-", "NOT NULL", "Status after the change."], ["ChangedAt", "DATETIME", "-", "NOT NULL", "Time of change (@event_time or NOW())."], ["ChangedBy", "INT", "FK", "NULL", "References Campus_User(UserID); ON DELETE SET NULL."]]}, "Feedback": {"desc": "Requester rating after closure (one per request).", "icon": "fa-star", "cols": [["FeedbackID", "INT AUTO_INCREMENT", "PK", "NOT NULL", "Unique feedback identifier."], ["RequestID", "INT", "FK", "NOT NULL", "References Maintenance_Request(RequestID); UNIQUE (one per request)."], ["Rating", "INT", "-", "NOT NULL", "CHECK (Rating BETWEEN 1 AND 5)."], ["Comments", "VARCHAR(255)", "-", "NULL", "Free text."], ["SubmittedAt", "DATETIME", "-", "NOT NULL", "Submission time; request must be Closed (trigger)."]]}};
+        const sqlQueries = {"1": {"title": "Report 1: Pending Requests with SLA Flag", "technique": "VIEW + 5-WAY JOIN + LEFT JOIN + CASE", "desc": "Lists every request still open, assigned, in progress or on hold, with its assigned technician, age in hours and a response-SLA flag.", "sql": "<span class=\"sql-kw\">CREATE OR REPLACE VIEW</span> vw_PendingRequests <span class=\"sql-kw\">AS</span>\n<span class=\"sql-kw\">SELECT</span> r.RequestID, r.RequestNo, b.BuildingName, rm.RoomNo, c.CategoryName,\n       p.PriorityID, p.PriorityName, p.TargetHours, r.Status, r.CreatedAt,\n       t.FullName <span class=\"sql-kw\">AS</span> AssignedTo\n<span class=\"sql-kw\">FROM</span> Maintenance_Request r\n<span class=\"sql-kw\">JOIN</span> Room rm     <span class=\"sql-kw\">ON</span> r.RoomID = rm.RoomID\n<span class=\"sql-kw\">JOIN</span> Building b  <span class=\"sql-kw\">ON</span> rm.BuildingID = b.BuildingID\n<span class=\"sql-kw\">JOIN</span> Category c  <span class=\"sql-kw\">ON</span> r.CategoryID = c.CategoryID\n<span class=\"sql-kw\">JOIN</span> Priority p  <span class=\"sql-kw\">ON</span> r.PriorityID = p.PriorityID\n<span class=\"sql-kw\">LEFT JOIN</span> Assignment a <span class=\"sql-kw\">ON</span> a.RequestID = r.RequestID <span class=\"sql-kw\">AND</span> a.Status = <span class=\"sql-str\">'Active'</span>\n<span class=\"sql-kw\">LEFT JOIN</span> Technician t <span class=\"sql-kw\">ON</span> a.TechID = t.TechID\n<span class=\"sql-kw\">WHERE</span> r.Status <span class=\"sql-kw\">IN</span> (<span class=\"sql-str\">'Open'</span>, <span class=\"sql-str\">'Assigned'</span>, <span class=\"sql-str\">'In Progress'</span>, <span class=\"sql-str\">'On Hold'</span>);\n\n<span class=\"sql-kw\">SELECT</span> v.RequestNo, v.BuildingName, v.RoomNo, v.CategoryName, v.PriorityName, v.Status,\n       <span class=\"sql-fn\">COALESCE</span>(v.AssignedTo, <span class=\"sql-str\">'unassigned'</span>) <span class=\"sql-kw\">AS</span> AssignedTo,\n       <span class=\"sql-fn\">ROUND</span>(<span class=\"sql-fn\">TIMESTAMPDIFF</span>(MINUTE, v.CreatedAt, @as_of) / <span class=\"sql-num\">60.0</span>, <span class=\"sql-num\">1</span>) <span class=\"sql-kw\">AS</span> AgeHours,\n       <span class=\"sql-kw\">CASE</span> <span class=\"sql-kw\">WHEN</span> v.Status = <span class=\"sql-str\">'Open'</span>\n             <span class=\"sql-kw\">AND</span> <span class=\"sql-fn\">TIMESTAMPDIFF</span>(MINUTE, v.CreatedAt, @as_of) / <span class=\"sql-num\">60.0</span> &gt; v.TargetHours\n            <span class=\"sql-kw\">THEN</span> <span class=\"sql-str\">'SLA BREACH'</span> <span class=\"sql-kw\">ELSE</span> <span class=\"sql-str\">'OK'</span> <span class=\"sql-kw\">END</span> <span class=\"sql-kw\">AS</span> ResponseSLA\n<span class=\"sql-kw\">FROM</span> vw_PendingRequests v\n<span class=\"sql-kw\">ORDER BY</span> v.PriorityID, v.CreatedAt;", "tableHtml": "<table class=\"dict-table\"><tr><th>Request No</th><th>Building Name</th><th>Room No</th><th>Category Name</th><th>Priority Name</th><th>Status</th><th>Assigned To</th><th>Age Hours</th><th>Response SLA</th></tr><tr><td>REQ-2026-0021</td><td>Boys Hostel A</td><td>MESS</td><td>Electrical</td><td><span class=\"bad\">Critical</span></td><td><span class=\"st-badge st-open\">Open</span></td><td>unassigned</td><td class=\"num\">16.0</td><td><span class=\"bad\">SLA BREACH</span></td></tr><tr><td>REQ-2026-0011</td><td>Auditorium &amp; Admin Block</td><td>MAIN-HALL</td><td>Electrical</td><td><span class=\"warn\">High</span></td><td><span class=\"st-badge st-onhold\">On Hold</span></td><td>Venkat Rao</td><td class=\"num\">238.0</td><td><span class=\"good\">OK</span></td></tr><tr><td>REQ-2026-0017</td><td>Boys Hostel A</td><td>112</td><td>Plumbing</td><td><span class=\"warn\">High</span></td><td><span class=\"st-badge st-inprogress\">In Progress</span></td><td>Mohd. Irfan</td><td class=\"num\">73.3</td><td><span class=\"good\">OK</span></td></tr><tr><td>REQ-2026-0015</td><td>Main Academic Block</td><td>204</td><td>Classroom &amp; AV</td><td><span class=\"\">Medium</span></td><td><span class=\"st-badge st-inprogress\">In Progress</span></td><td>Anitha Devi</td><td class=\"num\">95.5</td><td><span class=\"good\">OK</span></td></tr><tr><td>REQ-2026-0018</td><td>Science &amp; Research Block</td><td>LAB-1</td><td>Plumbing</td><td><span class=\"\">Medium</span></td><td><span class=\"st-badge st-assigned\">Assigned</span></td><td>Mohd. Irfan</td><td class=\"num\">65.5</td><td><span class=\"good\">OK</span></td></tr><tr><td>REQ-2026-0019</td><td>Central Library</td><td>RR-1</td><td>Furniture</td><td><span class=\"\">Medium</span></td><td><span class=\"st-badge st-assigned\">Assigned</span></td><td>Satish Kumar</td><td class=\"num\">47.0</td><td><span class=\"good\">OK</span></td></tr><tr><td>REQ-2026-0020</td><td>Main Academic Block</td><td>204</td><td>Classroom &amp; AV</td><td><span class=\"\">Medium</span></td><td><span class=\"st-badge st-open\">Open</span></td><td>unassigned</td><td class=\"num\">16.7</td><td><span class=\"good\">OK</span></td></tr><tr><td>REQ-2026-0012</td><td>Main Academic Block</td><td>101</td><td>Electrical</td><td><span class=\"\">Low</span></td><td><span class=\"st-badge st-inprogress\">In Progress</span></td><td>Ramesh Babu</td><td class=\"num\">211.0</td><td><span class=\"good\">OK</span></td></tr><tr><td>REQ-2026-0016</td><td>Central Library</td><td>G-WASH</td><td>Plumbing</td><td><span class=\"\">Low</span></td><td><span class=\"st-badge st-open\">Open</span></td><td>unassigned</td><td class=\"num\">92.0</td><td><span class=\"good\">OK</span></td></tr></table><div class=\"out-note\" style=\"margin-top:6px;\">Reporting clock @as_of = 2026-10-12 09:00 (use NOW() live).</div>"}, "2": {"title": "Report 2: Request Ageing Buckets", "technique": "DERIVED TABLE + CASE + GROUP BY", "desc": "Buckets pending requests by age so the facility office can see how much of the backlog is going stale.", "sql": "<span class=\"sql-kw\">SELECT</span> <span class=\"sql-kw\">CASE</span> <span class=\"sql-kw\">WHEN</span> x.AgeHrs &lt; <span class=\"sql-num\">24</span>  <span class=\"sql-kw\">THEN</span> <span class=\"sql-str\">'1. Under 1 day'</span>\n            <span class=\"sql-kw\">WHEN</span> x.AgeHrs &lt; <span class=\"sql-num\">72</span>  <span class=\"sql-kw\">THEN</span> <span class=\"sql-str\">'2. 1 to 3 days'</span>\n            <span class=\"sql-kw\">WHEN</span> x.AgeHrs &lt; <span class=\"sql-num\">168</span> <span class=\"sql-kw\">THEN</span> <span class=\"sql-str\">'3. 3 to 7 days'</span>\n            <span class=\"sql-kw\">ELSE</span> <span class=\"sql-str\">'4. Over 7 days'</span> <span class=\"sql-kw\">END</span> <span class=\"sql-kw\">AS</span> AgeBucket,\n       <span class=\"sql-fn\">COUNT</span>(*) <span class=\"sql-kw\">AS</span> PendingCount,\n       <span class=\"sql-fn\">SUM</span>(<span class=\"sql-kw\">CASE</span> <span class=\"sql-kw\">WHEN</span> x.PriorityName <span class=\"sql-kw\">IN</span> (<span class=\"sql-str\">'Critical'</span>, <span class=\"sql-str\">'High'</span>) <span class=\"sql-kw\">THEN</span> <span class=\"sql-num\">1</span> <span class=\"sql-kw\">ELSE</span> <span class=\"sql-num\">0</span> <span class=\"sql-kw\">END</span>) <span class=\"sql-kw\">AS</span> UrgentCount,\n       <span class=\"sql-fn\">ROUND</span>(<span class=\"sql-fn\">AVG</span>(x.AgeHrs) / <span class=\"sql-num\">24.0</span>, <span class=\"sql-num\">1</span>) <span class=\"sql-kw\">AS</span> AvgAgeDays\n<span class=\"sql-kw\">FROM</span> (<span class=\"sql-kw\">SELECT</span> v.PriorityName, <span class=\"sql-fn\">TIMESTAMPDIFF</span>(MINUTE, v.CreatedAt, @as_of) / <span class=\"sql-num\">60.0</span> <span class=\"sql-kw\">AS</span> AgeHrs\n      <span class=\"sql-kw\">FROM</span> vw_PendingRequests v) x\n<span class=\"sql-kw\">GROUP BY</span> AgeBucket\n<span class=\"sql-kw\">ORDER BY</span> AgeBucket;", "tableHtml": "<table class=\"dict-table\"><tr><th>Age Bucket</th><th>Pending Count</th><th>Urgent Count</th><th>Avg Age Days</th></tr><tr><td>1. Under 1 day</td><td class=\"num\">2</td><td class=\"num\">1</td><td class=\"num\">0.7</td></tr><tr><td>2. 1 to 3 days</td><td class=\"num\">2</td><td class=\"num\">0</td><td class=\"num\">2.3</td></tr><tr><td>3. 3 to 7 days</td><td class=\"num\">3</td><td class=\"num\">1</td><td class=\"num\">3.6</td></tr><tr><td>4. Over 7 days</td><td class=\"num\">2</td><td class=\"num\">1</td><td class=\"num\">9.4</td></tr></table><div class=\"out-note\" style=\"margin-top:6px;\">Computed from the pending-requests view.</div>"}, "3": {"title": "Report 3: Response Time vs Priority Target", "technique": "SUBQUERY (MIN) + CONDITIONAL AGGREGATION", "desc": "Measures time from request creation to first technician assignment and compares it with each priority's target hours.", "sql": "<span class=\"sql-kw\">SELECT</span> p.PriorityName, p.TargetHours,\n       <span class=\"sql-fn\">COUNT</span>(*) <span class=\"sql-kw\">AS</span> RequestsAssigned,\n       <span class=\"sql-fn\">ROUND</span>(<span class=\"sql-fn\">AVG</span>(x.RespMin) / <span class=\"sql-num\">60.0</span>, <span class=\"sql-num\">1</span>) <span class=\"sql-kw\">AS</span> AvgResponseHrs,\n       <span class=\"sql-fn\">ROUND</span>(<span class=\"sql-fn\">MAX</span>(x.RespMin) / <span class=\"sql-num\">60.0</span>, <span class=\"sql-num\">1</span>) <span class=\"sql-kw\">AS</span> WorstResponseHrs,\n       <span class=\"sql-fn\">ROUND</span>(<span class=\"sql-num\">100.0</span> * <span class=\"sql-fn\">SUM</span>(<span class=\"sql-kw\">CASE</span> <span class=\"sql-kw\">WHEN</span> x.RespMin &lt;= p.TargetHours * <span class=\"sql-num\">60</span> <span class=\"sql-kw\">THEN</span> <span class=\"sql-num\">1</span> <span class=\"sql-kw\">ELSE</span> <span class=\"sql-num\">0</span> <span class=\"sql-kw\">END</span>) / <span class=\"sql-fn\">COUNT</span>(*), <span class=\"sql-num\">0</span>) <span class=\"sql-kw\">AS</span> PctWithinTarget\n<span class=\"sql-kw\">FROM</span> (<span class=\"sql-kw\">SELECT</span> r.RequestID, r.PriorityID,\n             <span class=\"sql-fn\">TIMESTAMPDIFF</span>(MINUTE, r.CreatedAt, <span class=\"sql-fn\">MIN</span>(a.AssignedAt)) <span class=\"sql-kw\">AS</span> RespMin\n      <span class=\"sql-kw\">FROM</span> Maintenance_Request r\n      <span class=\"sql-kw\">JOIN</span> Assignment a <span class=\"sql-kw\">ON</span> a.RequestID = r.RequestID\n      <span class=\"sql-kw\">GROUP BY</span> r.RequestID, r.PriorityID) x\n<span class=\"sql-kw\">JOIN</span> Priority p <span class=\"sql-kw\">ON</span> x.PriorityID = p.PriorityID\n<span class=\"sql-kw\">GROUP BY</span> p.PriorityID, p.PriorityName, p.TargetHours\n<span class=\"sql-kw\">ORDER BY</span> p.PriorityID;", "tableHtml": "<table class=\"dict-table\"><tr><th>Priority Name</th><th>Target Hours</th><th>Requests Assigned</th><th>Avg Response Hrs</th><th>Worst Response Hrs</th><th>Pct Within Target</th></tr><tr><td><span class=\"bad\">Critical</span></td><td class=\"num\">4</td><td class=\"num\">1</td><td class=\"num\">0.5</td><td class=\"num\">0.5</td><td class=\"num\">100%</td></tr><tr><td><span class=\"warn\">High</span></td><td class=\"num\">24</td><td class=\"num\">6</td><td class=\"num\">8.1</td><td class=\"num\">25.3</td><td class=\"num\">83%</td></tr><tr><td><span class=\"\">Medium</span></td><td class=\"num\">72</td><td class=\"num\">7</td><td class=\"num\">30.3</td><td class=\"num\">96.0</td><td class=\"num\">86%</td></tr><tr><td><span class=\"\">Low</span></td><td class=\"num\">168</td><td class=\"num\">3</td><td class=\"num\">59.6</td><td class=\"num\">92.0</td><td class=\"num\">100%</td></tr></table><div class=\"out-note\" style=\"margin-top:6px;\">Only requests that have been assigned at least once are counted.</div>"}, "4": {"title": "Report 4: Technician Load & Availability", "technique": "VIEW + LEFT JOIN to AGGREGATED SUBQUERIES", "desc": "Shows each technician's active jobs against their limit, completed jobs, hours logged and availability.", "sql": "<span class=\"sql-kw\">CREATE OR REPLACE VIEW</span> vw_TechnicianLoad <span class=\"sql-kw\">AS</span>\n<span class=\"sql-kw\">SELECT</span> t.TechID, t.FullName, c.CategoryName <span class=\"sql-kw\">AS</span> Speciality, t.MaxActiveJobs,\n       <span class=\"sql-fn\">COALESCE</span>(act.Cnt, <span class=\"sql-num\">0</span>)  <span class=\"sql-kw\">AS</span> ActiveJobs,\n       <span class=\"sql-fn\">ROUND</span>(<span class=\"sql-num\">100.0</span> * <span class=\"sql-fn\">COALESCE</span>(act.Cnt, <span class=\"sql-num\">0</span>) / t.MaxActiveJobs, <span class=\"sql-num\">0</span>) <span class=\"sql-kw\">AS</span> LoadPct,\n       <span class=\"sql-fn\">COALESCE</span>(done.Cnt, <span class=\"sql-num\">0</span>) <span class=\"sql-kw\">AS</span> JobsCompleted,\n       <span class=\"sql-fn\">COALESCE</span>(hrs.Total, <span class=\"sql-num\">0</span>) <span class=\"sql-kw\">AS</span> HoursLogged,\n       <span class=\"sql-kw\">CASE</span> <span class=\"sql-kw\">WHEN</span> t.IsActive = <span class=\"sql-num\">0</span> <span class=\"sql-kw\">THEN</span> <span class=\"sql-str\">'ON LEAVE'</span>\n            <span class=\"sql-kw\">WHEN</span> <span class=\"sql-fn\">COALESCE</span>(act.Cnt, <span class=\"sql-num\">0</span>) &gt;= t.MaxActiveJobs <span class=\"sql-kw\">THEN</span> <span class=\"sql-str\">'FULL'</span>\n            <span class=\"sql-kw\">ELSE</span> <span class=\"sql-str\">'AVAILABLE'</span> <span class=\"sql-kw\">END</span> <span class=\"sql-kw\">AS</span> Availability\n<span class=\"sql-kw\">FROM</span> Technician t\n<span class=\"sql-kw\">JOIN</span> Category c <span class=\"sql-kw\">ON</span> t.CategoryID = c.CategoryID\n<span class=\"sql-kw\">LEFT JOIN</span> (<span class=\"sql-kw\">SELECT</span> TechID, <span class=\"sql-fn\">COUNT</span>(*) <span class=\"sql-kw\">AS</span> Cnt <span class=\"sql-kw\">FROM</span> Assignment\n           <span class=\"sql-kw\">WHERE</span> Status = <span class=\"sql-str\">'Active'</span> <span class=\"sql-kw\">GROUP BY</span> TechID) act <span class=\"sql-kw\">ON</span> act.TechID = t.TechID\n<span class=\"sql-kw\">LEFT JOIN</span> (<span class=\"sql-kw\">SELECT</span> TechID, <span class=\"sql-fn\">COUNT</span>(*) <span class=\"sql-kw\">AS</span> Cnt <span class=\"sql-kw\">FROM</span> Assignment\n           <span class=\"sql-kw\">WHERE</span> Status = <span class=\"sql-str\">'Completed'</span> <span class=\"sql-kw\">GROUP BY</span> TechID) done <span class=\"sql-kw\">ON</span> done.TechID = t.TechID\n<span class=\"sql-kw\">LEFT JOIN</span> (<span class=\"sql-kw\">SELECT</span> a.TechID, <span class=\"sql-fn\">SUM</span>(wl.HoursSpent) <span class=\"sql-kw\">AS</span> Total <span class=\"sql-kw\">FROM</span> Work_Log wl\n           <span class=\"sql-kw\">JOIN</span> Assignment a <span class=\"sql-kw\">ON</span> wl.AssignmentID = a.AssignmentID\n           <span class=\"sql-kw\">GROUP BY</span> a.TechID) hrs <span class=\"sql-kw\">ON</span> hrs.TechID = t.TechID;\n\n<span class=\"sql-kw\">SELECT</span> * <span class=\"sql-kw\">FROM</span> vw_TechnicianLoad <span class=\"sql-kw\">ORDER BY</span> LoadPct <span class=\"sql-kw\">DESC</span>, FullName;", "tableHtml": "<table class=\"dict-table\"><tr><th>Tech ID</th><th>Full Name</th><th>Speciality</th><th>Max Active Jobs</th><th>Active Jobs</th><th>Load Pct</th><th>Jobs Completed</th><th>Hours Logged</th><th>Availability</th></tr><tr><td class=\"num\">3</td><td>Mohd. Irfan</td><td>Plumbing</td><td class=\"num\">2</td><td class=\"num\">2</td><td class=\"num\">100%</td><td class=\"num\">2</td><td class=\"num\">4.5</td><td><span class=\"bad\">FULL</span></td></tr><tr><td class=\"num\">5</td><td>Anitha Devi</td><td>Classroom &amp; AV</td><td class=\"num\">3</td><td class=\"num\">1</td><td class=\"num\">33%</td><td class=\"num\">1</td><td class=\"num\">3.5</td><td><span class=\"good\">AVAILABLE</span></td></tr><tr><td class=\"num\">1</td><td>Ramesh Babu</td><td>Electrical</td><td class=\"num\">3</td><td class=\"num\">1</td><td class=\"num\">33%</td><td class=\"num\">3</td><td class=\"num\">8.5</td><td><span class=\"good\">AVAILABLE</span></td></tr><tr><td class=\"num\">2</td><td>Venkat Rao</td><td>Electrical</td><td class=\"num\">3</td><td class=\"num\">1</td><td class=\"num\">33%</td><td class=\"num\">1</td><td class=\"num\">3.5</td><td><span class=\"good\">AVAILABLE</span></td></tr><tr><td class=\"num\">4</td><td>Satish Kumar</td><td>Furniture</td><td class=\"num\">4</td><td class=\"num\">1</td><td class=\"num\">25%</td><td class=\"num\">2</td><td class=\"num\">3.5</td><td><span class=\"good\">AVAILABLE</span></td></tr><tr><td class=\"num\">7</td><td>Joseph D'Souza</td><td>Plumbing</td><td class=\"num\">3</td><td class=\"num\">0</td><td class=\"num\">0%</td><td class=\"num\">0</td><td class=\"num\">0.0</td><td><span class=\"warn\">ON LEAVE</span></td></tr><tr><td class=\"num\">6</td><td>Prakash Goud</td><td>HVAC</td><td class=\"num\">2</td><td class=\"num\">0</td><td class=\"num\">0%</td><td class=\"num\">2</td><td class=\"num\">7.5</td><td><span class=\"good\">AVAILABLE</span></td></tr></table><div class=\"out-note\" style=\"margin-top:6px;\">Mohd. Irfan is at his limit of 2; Joseph D'Souza is on leave.</div>"}, "5": {"title": "Report 5: Building-wise Maintenance Cost", "technique": "VIEW + CORRELATED SUBQUERIES + HAVING", "desc": "Adds material cost (quantity x price snapshot) and labour/vendor charges per request, then totals them per building.", "sql": "<span class=\"sql-kw\">CREATE OR REPLACE VIEW</span> vw_RequestCost <span class=\"sql-kw\">AS</span>\n<span class=\"sql-kw\">SELECT</span> r.RequestID, r.RequestNo, rm.BuildingID,\n       <span class=\"sql-fn\">COALESCE</span>((<span class=\"sql-kw\">SELECT</span> <span class=\"sql-fn\">SUM</span>(mu.Quantity * mu.UnitCost)\n                 <span class=\"sql-kw\">FROM</span> Material_Usage mu\n                 <span class=\"sql-kw\">JOIN</span> Work_Log wl   <span class=\"sql-kw\">ON</span> mu.LogID = wl.LogID\n                 <span class=\"sql-kw\">JOIN</span> Assignment a  <span class=\"sql-kw\">ON</span> wl.AssignmentID = a.AssignmentID\n                 <span class=\"sql-kw\">WHERE</span> a.RequestID = r.RequestID), <span class=\"sql-num\">0</span>) <span class=\"sql-kw\">AS</span> MaterialCost,\n       <span class=\"sql-fn\">COALESCE</span>((<span class=\"sql-kw\">SELECT</span> <span class=\"sql-fn\">SUM</span>(rc.Amount) <span class=\"sql-kw\">FROM</span> Request_Cost rc\n                 <span class=\"sql-kw\">WHERE</span> rc.RequestID = r.RequestID), <span class=\"sql-num\">0</span>) <span class=\"sql-kw\">AS</span> ServiceCost\n<span class=\"sql-kw\">FROM</span> Maintenance_Request r\n<span class=\"sql-kw\">JOIN</span> Room rm <span class=\"sql-kw\">ON</span> r.RoomID = rm.RoomID;\n\n<span class=\"sql-kw\">SELECT</span> b.BuildingName,\n       <span class=\"sql-fn\">COUNT</span>(*) <span class=\"sql-kw\">AS</span> Requests,\n       <span class=\"sql-fn\">SUM</span>(vc.MaterialCost) <span class=\"sql-kw\">AS</span> MaterialCost,\n       <span class=\"sql-fn\">SUM</span>(vc.ServiceCost)  <span class=\"sql-kw\">AS</span> ServiceCost,\n       <span class=\"sql-fn\">SUM</span>(vc.MaterialCost + vc.ServiceCost) <span class=\"sql-kw\">AS</span> TotalCost,\n       <span class=\"sql-fn\">ROUND</span>(<span class=\"sql-fn\">AVG</span>(vc.MaterialCost + vc.ServiceCost), <span class=\"sql-num\">0</span>) <span class=\"sql-kw\">AS</span> AvgPerRequest\n<span class=\"sql-kw\">FROM</span> vw_RequestCost vc\n<span class=\"sql-kw\">JOIN</span> Building b <span class=\"sql-kw\">ON</span> vc.BuildingID = b.BuildingID\n<span class=\"sql-kw\">GROUP BY</span> b.BuildingID, b.BuildingName\n<span class=\"sql-kw\">HAVING</span> <span class=\"sql-fn\">SUM</span>(vc.MaterialCost + vc.ServiceCost) &gt; <span class=\"sql-num\">0</span>\n<span class=\"sql-kw\">ORDER BY</span> TotalCost <span class=\"sql-kw\">DESC</span>;", "tableHtml": "<table class=\"dict-table\"><tr><th>Building Name</th><th>Requests</th><th>Material Cost</th><th>Service Cost</th><th>Total Cost</th><th>Avg Per Request</th></tr><tr><td>Auditorium &amp; Admin Block</td><td class=\"num\">3</td><td class=\"num\">\u20b92,435</td><td class=\"num\">\u20b93,000</td><td class=\"num\">\u20b95,435</td><td class=\"num\">\u20b91,812</td></tr><tr><td>Main Academic Block</td><td class=\"num\">6</td><td class=\"num\">\u20b94,005</td><td class=\"num\">\u20b91,350</td><td class=\"num\">\u20b95,355</td><td class=\"num\">\u20b9893</td></tr><tr><td>Science &amp; Research Block</td><td class=\"num\">3</td><td class=\"num\">\u20b91,106</td><td class=\"num\">\u20b91,500</td><td class=\"num\">\u20b92,606</td><td class=\"num\">\u20b9869</td></tr><tr><td>Boys Hostel A</td><td class=\"num\">4</td><td class=\"num\">\u20b91,320</td><td class=\"num\">\u20b9750</td><td class=\"num\">\u20b92,070</td><td class=\"num\">\u20b9518</td></tr><tr><td>Central Library</td><td class=\"num\">5</td><td class=\"num\">\u20b91,045</td><td class=\"num\">\u20b9900</td><td class=\"num\">\u20b91,945</td><td class=\"num\">\u20b9389</td></tr></table><div class=\"out-note\" style=\"margin-top:6px;\">Cost of requests not yet closed is included as accrued so far.</div>"}, "6": {"title": "Report 6: Material Use & Reorder Alerts", "technique": "4-WAY JOIN + COUNT(DISTINCT) + RANK() WINDOW", "desc": "Ranks materials by cost consumed, shows requests served and flags items at or below their reorder level.", "sql": "<span class=\"sql-kw\">SELECT</span> m.MaterialName, m.Unit,\n       <span class=\"sql-fn\">SUM</span>(mu.Quantity) <span class=\"sql-kw\">AS</span> QtyUsed,\n       <span class=\"sql-fn\">COUNT</span>(<span class=\"sql-kw\">DISTINCT</span> a.RequestID) <span class=\"sql-kw\">AS</span> RequestsServed,\n       <span class=\"sql-fn\">SUM</span>(mu.Quantity * mu.UnitCost) <span class=\"sql-kw\">AS</span> TotalCost,\n       m.StockQty <span class=\"sql-kw\">AS</span> StockLeft,\n       <span class=\"sql-kw\">CASE</span> <span class=\"sql-kw\">WHEN</span> m.StockQty &lt;= m.ReorderLevel <span class=\"sql-kw\">THEN</span> <span class=\"sql-str\">'REORDER'</span> <span class=\"sql-kw\">ELSE</span> <span class=\"sql-str\">'OK'</span> <span class=\"sql-kw\">END</span> <span class=\"sql-kw\">AS</span> StockStatus,\n       <span class=\"sql-fn\">RANK</span>() <span class=\"sql-kw\">OVER</span> (<span class=\"sql-kw\">ORDER BY</span> <span class=\"sql-fn\">SUM</span>(mu.Quantity * mu.UnitCost) <span class=\"sql-kw\">DESC</span>) <span class=\"sql-kw\">AS</span> CostRank\n<span class=\"sql-kw\">FROM</span> Material m\n<span class=\"sql-kw\">JOIN</span> Material_Usage mu <span class=\"sql-kw\">ON</span> mu.MaterialID = m.MaterialID\n<span class=\"sql-kw\">JOIN</span> Work_Log wl       <span class=\"sql-kw\">ON</span> mu.LogID = wl.LogID\n<span class=\"sql-kw\">JOIN</span> Assignment a      <span class=\"sql-kw\">ON</span> wl.AssignmentID = a.AssignmentID\n<span class=\"sql-kw\">GROUP BY</span> m.MaterialID, m.MaterialName, m.Unit, m.StockQty, m.ReorderLevel\n<span class=\"sql-kw\">ORDER BY</span> CostRank, m.MaterialName;", "tableHtml": "<table class=\"dict-table\"><tr><th>Material Name</th><th>Unit</th><th>Qty Used</th><th>Requests Served</th><th>Total Cost</th><th>Stock Left</th><th>Stock Status</th><th>Cost Rank</th></tr><tr><td>Projector Lamp</td><td>pcs</td><td class=\"num\">1</td><td class=\"num\">1</td><td class=\"num\">\u20b93,800</td><td class=\"num\">2</td><td><span class=\"bad\">REORDER</span></td><td class=\"num\">1</td></tr><tr><td>AC Refrigerant R32</td><td>kg</td><td class=\"num\">2</td><td class=\"num\">1</td><td class=\"num\">\u20b92,200</td><td class=\"num\">6</td><td><span class=\"good\">OK</span></td><td class=\"num\">2</td></tr><tr><td>LED Tube Light 18W</td><td>pcs</td><td class=\"num\">10</td><td class=\"num\">2</td><td class=\"num\">\u20b91,800</td><td class=\"num\">30</td><td><span class=\"good\">OK</span></td><td class=\"num\">3</td></tr><tr><td>MCB 16A</td><td>pcs</td><td class=\"num\">2</td><td class=\"num\">2</td><td class=\"num\">\u20b9480</td><td class=\"num\">18</td><td><span class=\"good\">OK</span></td><td class=\"num\">4</td></tr><tr><td>Copper Wire 2.5mm</td><td>metre</td><td class=\"num\">12</td><td class=\"num\">1</td><td class=\"num\">\u20b9456</td><td class=\"num\">188</td><td><span class=\"good\">OK</span></td><td class=\"num\">5</td></tr><tr><td>Tap Cartridge</td><td>pcs</td><td class=\"num\">2</td><td class=\"num\">1</td><td class=\"num\">\u20b9300</td><td class=\"num\">13</td><td><span class=\"good\">OK</span></td><td class=\"num\">6</td></tr><tr><td>Fan Capacitor</td><td>pcs</td><td class=\"num\">3</td><td class=\"num\">2</td><td class=\"num\">\u20b9255</td><td class=\"num\">27</td><td><span class=\"good\">OK</span></td><td class=\"num\">7</td></tr><tr><td>PVC Pipe 1 inch (3m)</td><td>pcs</td><td class=\"num\">1</td><td class=\"num\">1</td><td class=\"num\">\u20b9210</td><td class=\"num\">24</td><td><span class=\"good\">OK</span></td><td class=\"num\">8</td></tr><tr><td>Nut-Bolt Set M8</td><td>set</td><td class=\"num\">2</td><td class=\"num\">1</td><td class=\"num\">\u20b9190</td><td class=\"num\">38</td><td><span class=\"good\">OK</span></td><td class=\"num\">9</td></tr><tr><td>Door Hinge Set</td><td>set</td><td class=\"num\">1</td><td class=\"num\">1</td><td class=\"num\">\u20b9120</td><td class=\"num\">19</td><td><span class=\"good\">OK</span></td><td class=\"num\">10</td></tr><tr><td>PTFE Thread Seal Tape</td><td>roll</td><td class=\"num\">4</td><td class=\"num\">3</td><td class=\"num\">\u20b9100</td><td class=\"num\">56</td><td><span class=\"good\">OK</span></td><td class=\"num\">11</td></tr></table><div class=\"out-note\" style=\"margin-top:6px;\">Stock shown is after all deductions made by trg_usage_ai.</div>"}, "7": {"title": "Report 7: Feedback Analysis", "technique": "VIEW + LEFT JOIN + CORRELATED SUBQUERY", "desc": "Summarises ratings per category and lists requests rated below the average of their own category, with the technician who completed them.", "sql": "<span class=\"sql-kw\">CREATE OR REPLACE VIEW</span> vw_FeedbackSummary <span class=\"sql-kw\">AS</span>\n<span class=\"sql-kw\">SELECT</span> c.CategoryName,\n       <span class=\"sql-fn\">COUNT</span>(f.FeedbackID) <span class=\"sql-kw\">AS</span> Responses,\n       <span class=\"sql-fn\">ROUND</span>(<span class=\"sql-fn\">AVG</span>(f.Rating), <span class=\"sql-num\">2</span>) <span class=\"sql-kw\">AS</span> AvgRating,\n       <span class=\"sql-fn\">MIN</span>(f.Rating) <span class=\"sql-kw\">AS</span> LowestRating,\n       <span class=\"sql-fn\">SUM</span>(<span class=\"sql-kw\">CASE</span> <span class=\"sql-kw\">WHEN</span> f.Rating &gt;= <span class=\"sql-num\">4</span> <span class=\"sql-kw\">THEN</span> <span class=\"sql-num\">1</span> <span class=\"sql-kw\">ELSE</span> <span class=\"sql-num\">0</span> <span class=\"sql-kw\">END</span>) <span class=\"sql-kw\">AS</span> SatisfiedCount\n<span class=\"sql-kw\">FROM</span> Category c\n<span class=\"sql-kw\">LEFT JOIN</span> Maintenance_Request r <span class=\"sql-kw\">ON</span> r.CategoryID = c.CategoryID\n<span class=\"sql-kw\">LEFT JOIN</span> Feedback f <span class=\"sql-kw\">ON</span> f.RequestID = r.RequestID\n<span class=\"sql-kw\">GROUP BY</span> c.CategoryID, c.CategoryName;\n\n<span class=\"sql-kw\">SELECT</span> * <span class=\"sql-kw\">FROM</span> vw_FeedbackSummary <span class=\"sql-kw\">ORDER BY</span> AvgRating <span class=\"sql-kw\">DESC</span>;\n\n<span class=\"sql-kw\">SELECT</span> r.RequestNo, c.CategoryName, t.FullName <span class=\"sql-kw\">AS</span> Technician, f.Rating, f.Comments\n<span class=\"sql-kw\">FROM</span> Feedback f\n<span class=\"sql-kw\">JOIN</span> Maintenance_Request r <span class=\"sql-kw\">ON</span> f.RequestID = r.RequestID\n<span class=\"sql-kw\">JOIN</span> Category c   <span class=\"sql-kw\">ON</span> r.CategoryID = c.CategoryID\n<span class=\"sql-kw\">JOIN</span> Assignment a <span class=\"sql-kw\">ON</span> a.RequestID = r.RequestID <span class=\"sql-kw\">AND</span> a.Status = <span class=\"sql-str\">'Completed'</span>\n<span class=\"sql-kw\">JOIN</span> Technician t <span class=\"sql-kw\">ON</span> a.TechID = t.TechID\n<span class=\"sql-kw\">WHERE</span> f.Rating &lt; (<span class=\"sql-kw\">SELECT</span> <span class=\"sql-fn\">AVG</span>(f2.Rating)\n                  <span class=\"sql-kw\">FROM</span> Feedback f2\n                  <span class=\"sql-kw\">JOIN</span> Maintenance_Request r2 <span class=\"sql-kw\">ON</span> f2.RequestID = r2.RequestID\n                  <span class=\"sql-kw\">WHERE</span> r2.CategoryID = r.CategoryID)\n<span class=\"sql-kw\">ORDER BY</span> f.Rating, r.RequestNo;", "tableHtml": "<div class=\"out-note\">vw_FeedbackSummary</div><table class=\"dict-table\"><tr><th>Category Name</th><th>Responses</th><th>Avg Rating</th><th>Lowest Rating</th><th>Satisfied Count</th></tr><tr><td>Classroom &amp; AV</td><td class=\"num\">1</td><td class=\"num\">5.00</td><td class=\"num\">5</td><td class=\"num\">1</td></tr><tr><td>Plumbing</td><td class=\"num\">1</td><td class=\"num\">5.00</td><td class=\"num\">5</td><td class=\"num\">1</td></tr><tr><td>Electrical</td><td class=\"num\">4</td><td class=\"num\">4.00</td><td class=\"num\">2</td><td class=\"num\">3</td></tr><tr><td>HVAC</td><td class=\"num\">2</td><td class=\"num\">4.00</td><td class=\"num\">4</td><td class=\"num\">2</td></tr><tr><td>Furniture</td><td class=\"num\">2</td><td class=\"num\">3.50</td><td class=\"num\">3</td><td class=\"num\">1</td></tr></table><div class=\"out-note\" style=\"margin-top:10px;\">Rated below own category average</div><table class=\"dict-table\"><tr><th>Request No</th><th>Category Name</th><th>Technician</th><th>Rating</th><th>Comments</th></tr><tr><td>REQ-2026-0008</td><td>Electrical</td><td>Ramesh Babu</td><td class=\"num\">2</td><td>Dimmed again after a week</td></tr><tr><td>REQ-2026-0003</td><td>Furniture</td><td>Satish Kumar</td><td class=\"num\">3</td><td>Fixed but took two days</td></tr></table>"}};
+        const TRANSITIONS = [["Open", "Assigned"], ["Open", "Cancelled"], ["Assigned", "In Progress"], ["Assigned", "Open"], ["Assigned", "On Hold"], ["Assigned", "Cancelled"], ["In Progress", "On Hold"], ["In Progress", "Resolved"], ["On Hold", "In Progress"], ["On Hold", "Cancelled"], ["Resolved", "Closed"], ["Resolved", "Open"]];
+        const STATUSES = ["Open", "Assigned", "In Progress", "On Hold", "Resolved", "Closed", "Cancelled"];
+        const SIM_INIT = {"requests": [{"id": 1, "no": "REQ-2026-0001", "desc": "Ceiling projector not powering on during lectures", "cat": "Classroom & AV", "pri": "High", "status": "Closed", "tech": null, "logs": 2, "fb": true, "remarks": true}, {"id": 2, "no": "REQ-2026-0002", "desc": "Fume hood exhaust fan sparking", "cat": "Electrical", "pri": "Critical", "status": "Closed", "tech": null, "logs": 1, "fb": true, "remarks": true}, {"id": 3, "no": "REQ-2026-0003", "desc": "Cot frame broken, loose joints", "cat": "Furniture", "pri": "Low", "status": "Closed", "tech": null, "logs": 1, "fb": true, "remarks": true}, {"id": 4, "no": "REQ-2026-0004", "desc": "Tap leaking continuously in ground-floor washroom", "cat": "Plumbing", "pri": "High", "status": "Closed", "tech": null, "logs": 1, "fb": true, "remarks": true}, {"id": 5, "no": "REQ-2026-0005", "desc": "Auditorium AC not cooling", "cat": "HVAC", "pri": "Medium", "status": "Closed", "tech": null, "logs": 2, "fb": true, "remarks": true}, {"id": 6, "no": "REQ-2026-0006", "desc": "Mess hall tube lights flickering", "cat": "Electrical", "pri": "High", "status": "Closed", "tech": null, "logs": 1, "fb": true, "remarks": true}, {"id": 7, "no": "REQ-2026-0007", "desc": "Split AC making loud noise", "cat": "HVAC", "pri": "Medium", "status": "Closed", "tech": null, "logs": 1, "fb": true, "remarks": true}, {"id": 8, "no": "REQ-2026-0008", "desc": "Light panels dim in reading room", "cat": "Electrical", "pri": "Medium", "status": "Closed", "tech": null, "logs": 1, "fb": true, "remarks": true}, {"id": 9, "no": "REQ-2026-0009", "desc": "Podium drawer lock jammed", "cat": "Furniture", "pri": "Low", "status": "Closed", "tech": null, "logs": 1, "fb": true, "remarks": true}, {"id": 10, "no": "REQ-2026-0010", "desc": "Power sockets dead on bench 3", "cat": "Electrical", "pri": "High", "status": "Closed", "tech": null, "logs": 1, "fb": true, "remarks": true}, {"id": 11, "no": "REQ-2026-0011", "desc": "Stage lighting dimmer channel failed", "cat": "Electrical", "pri": "High", "status": "On Hold", "tech": 2, "logs": 1, "fb": false, "remarks": false}, {"id": 12, "no": "REQ-2026-0012", "desc": "Ceiling fan wobbling and noisy", "cat": "Electrical", "pri": "Low", "status": "In Progress", "tech": 1, "logs": 1, "fb": false, "remarks": false}, {"id": 13, "no": "REQ-2026-0013", "desc": "Drinking water cooler leaking", "cat": "Plumbing", "pri": "Medium", "status": "Resolved", "tech": null, "logs": 1, "fb": false, "remarks": false}, {"id": 14, "no": "REQ-2026-0014", "desc": "Projector issue (duplicate entry)", "cat": "Classroom & AV", "pri": "Low", "status": "Cancelled", "tech": null, "logs": 0, "fb": false, "remarks": true}, {"id": 15, "no": "REQ-2026-0015", "desc": "Smart board touch calibration drifting", "cat": "Classroom & AV", "pri": "Medium", "status": "In Progress", "tech": 5, "logs": 1, "fb": false, "remarks": false}, {"id": 16, "no": "REQ-2026-0016", "desc": "Hand-wash basin drain draining slowly", "cat": "Plumbing", "pri": "Low", "status": "Open", "tech": null, "logs": 0, "fb": false, "remarks": false}, {"id": 17, "no": "REQ-2026-0017", "desc": "Bathroom flush tank overflow", "cat": "Plumbing", "pri": "High", "status": "In Progress", "tech": 3, "logs": 1, "fb": false, "remarks": false}, {"id": 18, "no": "REQ-2026-0018", "desc": "Water purifier showing no output", "cat": "Plumbing", "pri": "Medium", "status": "Assigned", "tech": 3, "logs": 0, "fb": false, "remarks": false}, {"id": 19, "no": "REQ-2026-0019", "desc": "Reading tables wobbling (3 tables)", "cat": "Furniture", "pri": "Medium", "status": "Assigned", "tech": 4, "logs": 0, "fb": false, "remarks": false}, {"id": 20, "no": "REQ-2026-0020", "desc": "Whiteboard surface peeling", "cat": "Classroom & AV", "pri": "Medium", "status": "Open", "tech": null, "logs": 0, "fb": false, "remarks": false}, {"id": 21, "no": "REQ-2026-0021", "desc": "Kitchen exhaust fan stopped, smoke accumulating", "cat": "Electrical", "pri": "Critical", "status": "Open", "tech": null, "logs": 0, "fb": false, "remarks": false}], "techs": {"1": {"name": "Ramesh Babu", "mx": 3, "active": true, "cat": "Electrical"}, "2": {"name": "Venkat Rao", "mx": 3, "active": true, "cat": "Electrical"}, "3": {"name": "Mohd. Irfan", "mx": 2, "active": true, "cat": "Plumbing"}, "4": {"name": "Satish Kumar", "mx": 4, "active": true, "cat": "Furniture"}, "5": {"name": "Anitha Devi", "mx": 3, "active": true, "cat": "Classroom & AV"}, "6": {"name": "Prakash Goud", "mx": 2, "active": true, "cat": "HVAC"}, "7": {"name": "Joseph D'Souza", "mx": 3, "active": false, "cat": "Plumbing"}}, "mats": {"1": {"name": "LED Tube Light 18W", "unit": "pcs", "stock": 30, "reorder": 15}, "2": {"name": "Fan Capacitor", "unit": "pcs", "stock": 27, "reorder": 10}, "3": {"name": "MCB 16A", "unit": "pcs", "stock": 18, "reorder": 8}, "4": {"name": "Copper Wire 2.5mm", "unit": "metre", "stock": 188, "reorder": 50}, "5": {"name": "PVC Pipe 1 inch (3m)", "unit": "pcs", "stock": 24, "reorder": 10}, "6": {"name": "Tap Cartridge", "unit": "pcs", "stock": 13, "reorder": 6}, "7": {"name": "Plywood Sheet 8x4", "unit": "sheet", "stock": 10, "reorder": 4}, "8": {"name": "Door Hinge Set", "unit": "set", "stock": 19, "reorder": 6}, "9": {"name": "AC Refrigerant R32", "unit": "kg", "stock": 6, "reorder": 4}, "10": {"name": "Projector Lamp", "unit": "pcs", "stock": 2, "reorder": 2}, "11": {"name": "PTFE Thread Seal Tape", "unit": "roll", "stock": 56, "reorder": 20}, "12": {"name": "Nut-Bolt Set M8", "unit": "set", "stock": 38, "reorder": 15}}};
+        const STATUS_CLS = {'Open':'st-open','Assigned':'st-assigned','In Progress':'st-inprogress','On Hold':'st-onhold','Resolved':'st-resolved','Closed':'st-closed','Cancelled':'st-cancelled'};
+
+        // ---------- Slide navigation
+        let currentSlideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const dotsContainer = document.getElementById('slideDots');
+        const slideCounter = document.getElementById('slideCounter');
+        slides.forEach((_, idx) => {
+            const dot = document.createElement('div');
+            dot.className = `dot ${idx === 0 ? 'active' : ''}`;
+            dot.onclick = () => goToSlide(idx);
+            dotsContainer.appendChild(dot);
+        });
+        function updateSlideUI() {
+            slides.forEach((s, i) => s.classList.toggle('active', i === currentSlideIndex));
+            document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === currentSlideIndex));
+            slideCounter.textContent = `${currentSlideIndex + 1} / ${slides.length}`;
+            document.getElementById('pitchSlideTitle').textContent = `Slide ${currentSlideIndex + 1}`;
+            document.getElementById('pitchContent').textContent = pitchScripts[currentSlideIndex] || '';
+        }
+        function nextSlide() { if (currentSlideIndex < slides.length - 1) { currentSlideIndex++; updateSlideUI(); } }
+        function prevSlide() { if (currentSlideIndex > 0) { currentSlideIndex--; updateSlideUI(); } }
+        function goToSlide(i) { currentSlideIndex = i; updateSlideUI(); }
+        document.addEventListener('keydown', (e) => {
+            const tag = (e.target.tagName || '').toLowerCase();
+            if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
+            if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); nextSlide(); }
+            else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prevSlide(); }
+            else if (e.key.toLowerCase() === 'p') togglePitchDrawer();
+            else if (e.key.toLowerCase() === 'f') toggleFullScreen();
+        });
+        function togglePitchDrawer() { document.getElementById('pitchDrawer').classList.toggle('open'); }
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+            else if (document.exitFullscreen) document.exitFullscreen();
+        }
+
+        // ---------- Data dictionary
+        function showDictTable(name) {
+            document.querySelectorAll('.dict-tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('#dictNav .dict-tab-btn').forEach(b => { if (b.textContent.trim().startsWith(name + ' ') || b.textContent.trim().split(' ')[0] === name) b.classList.add('active'); });
+            const t = dataDictionary[name];
+            document.getElementById('dictTableName').innerHTML = `<i class="fa-solid fa-table"></i> ${name.toUpperCase()}`;
+            document.getElementById('dictTableDesc').textContent = t.desc;
+            let h = `<table class="dict-table"><thead><tr><th>Column</th><th>Type</th><th>Key</th><th>Nullability</th><th>Description / Constraint</th></tr></thead><tbody>`;
+            t.cols.forEach(c => {
+                const kb = c[2] === 'PK' ? '<span class="key-pill-pk">PK</span>' : c[2] === 'FK' ? '<span class="key-pill-fk">FK</span>' : c[2] === 'UNIQUE' ? '<span class="type-pill">UNIQUE</span>' : '-';
+                h += `<tr><td style="font-family:'JetBrains Mono';font-weight:700;color:#FFFDFB;">${c[0]}</td><td><span class="type-pill">${c[1]}</span></td><td>${kb}</td><td style="font-size:0.75rem;color:var(--text-muted);">${c[3]}</td><td style="font-size:0.78rem;">${c[4]}</td></tr>`;
+            });
+            document.getElementById('dictTableContent').innerHTML = h + '</tbody></table>';
+        }
+
+        // ---------- Query viewer
+        function showQuery(id) {
+            document.querySelectorAll('.query-tab-btn').forEach((b, i) => b.classList.toggle('active', i + 1 === id));
+            const q = sqlQueries[id]; if (!q) return;
+            document.getElementById('queryTitle').innerHTML = `<i class="fa-solid fa-code"></i> ${q.title}`;
+            document.getElementById('queryTechnique').textContent = q.technique;
+            document.getElementById('queryDescription').textContent = q.desc;
+            document.getElementById('queryCodeDisplay').innerHTML = q.sql;
+            document.getElementById('queryOutputTable').innerHTML = q.tableHtml;
+        }
+
+        // ---------- State machine slide
+        function buildMatrix() {
+            const ok = new Set(TRANSITIONS.map(t => t[0] + '>' + t[1]));
+            let h = '<table class="matrix"><tr><th></th>' + STATUSES.map(s => `<th>${s}</th>`).join('') + '</tr>';
+            STATUSES.forEach(f => {
+                h += `<tr id="mx-${f.replace(' ', '')}"><td class="rowh">${f}</td>` + STATUSES.map(t => ok.has(f + '>' + t) ? '<td class="ok">✓</td>' : '<td class="no">·</td>').join('') + '</tr>';
+            });
+            document.getElementById('matrixHost').innerHTML = h + '</table>';
+        }
+        function selectState(s) {
+            document.querySelectorAll('.flow-node').forEach(n => n.classList.remove('sel'));
+            document.getElementById('fn-' + s.replace(' ', '')).classList.add('sel');
+            document.querySelectorAll('table.matrix tr').forEach(r => r.classList.remove('hl'));
+            document.getElementById('mx-' + s.replace(' ', '')).classList.add('hl');
+            const next = TRANSITIONS.filter(t => t[0] === s).map(t => `<span class="st-badge ${STATUS_CLS[t[1]]}">${t[1]}</span>`);
+            document.getElementById('stateInfo').innerHTML = `<strong>From <span class="st-badge ${STATUS_CLS[s]}">${s}</span> a request can move to:</strong><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">` +
+                (next.length ? next.join('') : '<span style="color:var(--text-muted);">Nothing: this is a terminal status.</span>') + '</div>';
+        }
+
+        // ---------- Prototype simulator (mirrors the triggers)
+        let sim = JSON.parse(JSON.stringify(SIM_INIT));
+        const TERM = ['Closed', 'Cancelled', 'Resolved'];
+        function stBadge(s) { return `<span class="st-badge ${STATUS_CLS[s]}">${s}</span>`; }
+        function techLoad(id) { return sim.requests.filter(r => r.tech === id).length; }
+        function logConsole(msg, type = 'info') {
+            const con = document.getElementById('protoConsole');
+            const time = new Date().toLocaleTimeString();
+            const color = { error: '#FDA4AF', warn: '#FDE68A', success: '#A7F3D0', info: '#6EE7B7', sql: '#C7BDB5' }[type] || '#6EE7B7';
+            con.innerHTML += `\n<span style="color:${color};">[${time}] ${msg}</span>`;
+            con.scrollTop = con.scrollHeight;
+        }
+        function clearConsole() { document.getElementById('protoConsole').innerHTML = '[SYSTEM RESET] Console cleared.'; }
+        function curReq() { return sim.requests.find(r => r.id === +document.getElementById('simReq').value); }
+        function fillReqSelect(keep) {
+            const sel = document.getElementById('simReq');
+            const prev = keep ? sel.value : '';
+            sel.innerHTML = sim.requests.map(r => `<option value="${r.id}">${r.no} · ${r.status} · ${r.pri}</option>`).join('');
+            if (prev) sel.value = prev;
+        }
+        function refreshSim() {
+            const r = curReq(); if (!r) return;
+            const t = r.tech ? sim.techs[r.tech].name : 'none';
+            document.getElementById('simStatus').innerHTML = `<strong>${r.no}</strong> (${r.cat}, ${r.pri}) — ${r.desc}<br>Status: ${stBadge(r.status)} &nbsp; Active technician: <strong>${t}</strong> &nbsp; Work logs: <strong>${r.logs}</strong> &nbsp; Feedback: <strong>${r.fb ? 'yes' : 'no'}</strong>`;
+        }
+        function renderFields() {
+            const a = document.getElementById('simAction').value;
+            const techOpts = Object.entries(sim.techs).map(([id, t]) => `<option value="${id}">${t.name} — ${t.cat} (${techLoad(+id)}/${t.mx} jobs${t.active ? '' : ', ON LEAVE'})</option>`).join('');
+            const matOpts = Object.entries(sim.mats).map(([id, m]) => `<option value="${id}">${m.name} (stock ${m.stock} ${m.unit})</option>`).join('');
+            const stOpts = STATUSES.map(s => `<option>${s}</option>`).join('');
+            const F = {
+                assign: `<div class="proto-form-group tight"><label>Technician</label><select id="fTech" class="proto-select">${techOpts}</select></div>`,
+                release: `<div class="proto-form-group tight"><label>Releases the current active assignment (marked Reassigned)</label></div>`,
+                status: `<div class="proto-form-group tight"><label>New status</label><select id="fStatus" class="proto-select">${stOpts}</select></div>
+                         <div class="proto-form-group tight"><label>Closure / cancellation remarks</label><input id="fRemarks" class="proto-input" placeholder="Required when closing"></div>`,
+                worklog: `<div class="proto-form-group tight"><label>Hours spent (0 to 24)</label><input id="fHours" class="proto-input" type="number" step="0.5" value="1.5"></div>`,
+                material: `<div class="proto-form-group tight"><label>Material</label><select id="fMat" class="proto-select">${matOpts}</select></div>
+                          <div class="proto-form-group tight"><label>Quantity</label><input id="fQty" class="proto-input" type="number" value="1"></div>`,
+                cost: `<div class="proto-form-group tight"><label>Labour / vendor amount (₹)</label><input id="fAmt" class="proto-input" type="number" value="500"></div>`,
+                feedback: `<div class="proto-form-group tight"><label>Rating (1 to 5)</label><input id="fRating" class="proto-input" type="number" value="5"></div>`
+            };
+            document.getElementById('simFields').innerHTML = F[a];
+        }
+        function setSel(id, v) { const e = document.getElementById(id); if (e) e.value = v; }
+        function findReq(pred) { const r = sim.requests.find(pred); return r ? r.id : sim.requests[0].id; }
+        function preset(p) {
+            const act = document.getElementById('simAction');
+            if (p === 'close') { setSel('simReq', findReq(r => r.status === 'Resolved')); act.value = 'status'; renderFields(); setSel('fStatus', 'Closed'); }
+            if (p === 'skip') { setSel('simReq', findReq(r => r.status === 'Open' && !r.tech)); act.value = 'status'; renderFields(); setSel('fStatus', 'Resolved'); }
+            if (p === 'leave') { setSel('simReq', findReq(r => r.status === 'Open' && !r.tech)); act.value = 'assign'; renderFields(); setSel('fTech', 7); }
+            if (p === 'full') { setSel('simReq', findReq(r => r.status === 'Open' && !r.tech && r.cat === 'Plumbing')); act.value = 'assign'; renderFields(); setSel('fTech', 3); }
+            if (p === 'stock') { setSel('simReq', findReq(r => r.logs > 0 && r.status === 'In Progress')); act.value = 'material'; renderFields(); setSel('fMat', 10); setSel('fQty', 5); }
+            refreshSim();
+        }
+        function setStatus(r, s, by) {
+            const old = r.status; r.status = s;
+            logConsole(`[TRIGGER trg_req_au] Status_History row added: ${old} → ${s}`, 'info');
+        }
+        function runAction() {
+            const r = curReq(); const a = document.getElementById('simAction').value;
+            const err = (m) => logConsole(`[ERROR] ${m}`, 'error');
+            if (a === 'assign') {
+                const tid = +document.getElementById('fTech').value, t = sim.techs[tid];
+                logConsole(`[SQL] INSERT INTO Assignment (RequestID, TechID) VALUES ('${r.no}', ${tid});`, 'sql');
+                if (!t.active) return err('Assignment Control: technician is inactive (on leave).');
+                if (techLoad(tid) >= t.mx) return err('Assignment Control: technician has reached the maximum number of active jobs.');
+                if (r.tech) return err('Assignment Control: request already has an active assignment (reassign the old one first).');
+                if (['Resolved', 'Closed', 'Cancelled'].includes(r.status)) return err('Assignment Control: closed, resolved or cancelled requests cannot be assigned.');
+                r.tech = tid; logConsole(`[COMMIT] ${t.name} assigned to ${r.no} (${techLoad(tid)}/${t.mx} jobs).`, 'success');
+                if (r.status === 'Open') { logConsole('[TRIGGER trg_asg_ai] Request moved Open → Assigned.', 'info'); setStatus(r, 'Assigned'); }
+            } else if (a === 'release') {
+                logConsole(`[SQL] UPDATE Assignment SET Status='Reassigned' WHERE RequestID='${r.no}' AND Status='Active';`, 'sql');
+                if (!r.tech) return err('No active assignment to release.');
+                const n = sim.techs[r.tech].name; r.tech = null;
+                logConsole(`[COMMIT] Assignment of ${n} marked Reassigned (history kept).`, 'success');
+                if (r.status === 'Assigned') { logConsole('[APP] Status moved Assigned → Open (legal transition).', 'info'); setStatus(r, 'Open'); }
+            } else if (a === 'status') {
+                const ns = document.getElementById('fStatus').value, rem = document.getElementById('fRemarks').value.trim();
+                logConsole(`[SQL] UPDATE Maintenance_Request SET Status='${ns}' WHERE RequestNo='${r.no}';`, 'sql');
+                if (ns === r.status) return logConsole('[INFO] Status unchanged: no trigger fired.', 'warn');
+                if (!TRANSITIONS.some(t => t[0] === r.status && t[1] === ns)) return err(`Invalid Status Transition: ${r.status} → ${ns} is not allowed by Status_Transition.`);
+                if (ns === 'In Progress' && !r.tech) return err('Assignment Control: work cannot start without an active technician assignment.');
+                if (ns === 'Resolved' && r.logs === 0) return err('Integrity Violation: at least one work log is required before resolving.');
+                if (ns === 'Closed' && !rem) return err('Closure Details Required: ClosureRemarks must be provided to close a request.');
+                if (ns === 'Resolved' && r.tech) { logConsole('[APP] Active assignment marked Completed.', 'info'); r.tech = null; }
+                if (ns === 'Cancelled' && r.tech) { logConsole('[APP] Active assignment released.', 'info'); r.tech = null; }
+                if (ns === 'Closed') logConsole('[TRIGGER trg_req_bu] ClosedAt auto-filled with the current time.', 'info');
+                setStatus(r, ns); logConsole(`[COMMIT] ${r.no} is now ${ns}.`, 'success');
+            } else if (a === 'worklog') {
+                const h = parseFloat(document.getElementById('fHours').value);
+                logConsole(`[SQL] INSERT INTO Work_Log (AssignmentID, HoursSpent) VALUES (<active assignment of ${r.no}>, ${h});`, 'sql');
+                if (!r.tech) return err('A work log needs an Active assignment on this request.');
+                if (isNaN(h) || h < 0 || h > 24) return err('ERROR 3819: Check constraint on Work_Log (HoursSpent BETWEEN 0 AND 24) is violated.');
+                r.logs++; logConsole(`[COMMIT] Work log added (${r.logs} total for ${r.no}).`, 'success');
+            } else if (a === 'material') {
+                const mid = +document.getElementById('fMat').value, q = parseInt(document.getElementById('fQty').value), m = sim.mats[mid];
+                logConsole(`[SQL] INSERT INTO Material_Usage (LogID, MaterialID, Quantity) VALUES (<latest log>, ${mid}, ${q});`, 'sql');
+                if (r.logs === 0) return err('Add a work log first: material usage is recorded against a log entry.');
+                if (isNaN(q) || q <= 0) return err('ERROR 3819: Check constraint on Material_Usage (Quantity > 0) is violated.');
+                if (q > m.stock) return err(`Stock Violation: requested material quantity exceeds available stock (${m.name}: ${m.stock} left).`);
+                m.stock -= q; logConsole(`[TRIGGER trg_usage_ai] ${m.name} stock reduced to ${m.stock} ${m.unit}.`, 'info');
+                if (m.stock <= m.reorder) logConsole(`[ALERT] ${m.name} is at or below its reorder level (${m.reorder}).`, 'warn');
+                logConsole('[COMMIT] Material usage recorded.', 'success');
+            } else if (a === 'cost') {
+                const amt = parseFloat(document.getElementById('fAmt').value);
+                logConsole(`[SQL] INSERT INTO Request_Cost (RequestID, CostType, Amount) VALUES ('${r.no}', 'Labour', ${amt});`, 'sql');
+                if (isNaN(amt) || amt < 0) return err('ERROR 3819: Check constraint on Request_Cost (Amount >= 0) is violated.');
+                logConsole(`[COMMIT] Cost of ₹${amt.toFixed(2)} recorded.`, 'success');
+            } else if (a === 'feedback') {
+                const rt = parseInt(document.getElementById('fRating').value);
+                logConsole(`[SQL] INSERT INTO Feedback (RequestID, Rating) VALUES ('${r.no}', ${rt});`, 'sql');
+                if (r.status !== 'Closed') return err('Integrity Violation: feedback is accepted only for Closed requests.');
+                if (isNaN(rt) || rt < 1 || rt > 5) return err('ERROR 3819: Check constraint on Feedback (Rating BETWEEN 1 AND 5) is violated.');
+                if (r.fb) return err('ERROR 1062: Duplicate entry for key Feedback.RequestID (one feedback per request).');
+                r.fb = true; logConsole('[COMMIT] Feedback recorded.', 'success');
+            }
+            fillReqSelect(true); renderFields(); refreshSim();
+        }
+        function resetSim() { sim = JSON.parse(JSON.stringify(SIM_INIT)); fillReqSelect(false); renderFields(); refreshSim(); logConsole('[RESET] Simulator state restored to the loaded sample data.', 'warn'); }
+
+        // ---------- init
+        showDictTable('Building');
+        showQuery(1);
+        buildMatrix(); selectState('Open');
+        fillReqSelect(false); renderFields(); refreshSim();
+        updateSlideUI();
+
+    </script>
+</body>
+
+</html>
